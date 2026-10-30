@@ -49,7 +49,7 @@
 
     .app-container {
       width: 100%;
-      max-width: 1100px;
+      max-width: 1200px;
       display: grid;
       grid-template-columns: 1fr 340px;
       gap: 20px;
@@ -72,8 +72,8 @@
     /* HEADER & STATS */
     .stats-container {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 10px;
       margin-bottom: 20px;
     }
 
@@ -81,30 +81,23 @@
       background: #f8fafc;
       border: 1px solid var(--border-color);
       border-radius: 8px;
-      padding: 12px;
+      padding: 10px;
       text-align: center;
     }
 
     .stat-card.streak {
       background: #e0e7ff;
       border-color: #a5b4fc;
-      grid-column: span 2;
-    }
-
-    @media (max-width: 500px) {
-      .stat-card.streak {
-        grid-column: span 1;
-      }
     }
 
     .stat-value {
-      font-size: 1.3rem;
+      font-size: 1.1rem;
       font-weight: 700;
       margin-top: 4px;
     }
 
     .stat-label {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -145,6 +138,16 @@
     .btn:hover {
       background-color: #f1f5f9;
       border-color: #94a3b8;
+    }
+
+    .btn-primary {
+      background-color: var(--color-accent);
+      color: #ffffff;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background-color: #4338ca;
     }
 
     /* CALENDAR GRID */
@@ -218,14 +221,6 @@
       display: flex;
       align-items: center;
       gap: 3px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0% { opacity: 0.9; }
-      50% { opacity: 1; transform: scale(1.03); }
-      100% { opacity: 0.9; }
     }
 
     .event-flag-dot {
@@ -255,17 +250,20 @@
     .badge-x { background-color: var(--color-x-bg); color: var(--color-x); border: 1px solid var(--color-x-border); }
 
     /* SIDE PANEL */
-    .panel-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      margin-bottom: 12px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--border-color);
-      color: var(--text-main);
+    .sidebar-section {
+      margin-bottom: 20px;
     }
 
-    .toggle-section {
-      margin-bottom: 20px;
+    .panel-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-main);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .toggle-group {
@@ -295,18 +293,13 @@
     .toggle-btn.active-r { background: var(--color-r-bg); color: var(--color-r); border-color: var(--color-r-border); }
     .toggle-btn.active-x { background: var(--color-x-bg); color: var(--color-x); border-color: var(--color-x-border); }
 
-    /* EVENTS SECTION */
-    .events-section {
-      margin-top: 10px;
-    }
-
-    .event-input-group {
+    .input-group {
       display: flex;
       gap: 6px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
-    .event-input {
+    .custom-input {
       flex: 1;
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -316,21 +309,21 @@
       font-size: 0.85rem;
     }
 
-    .event-input:focus {
+    .custom-input:focus {
       outline: 2px solid var(--color-accent);
       border-color: transparent;
     }
 
-    .event-list {
+    .item-list {
       list-style: none;
       display: flex;
       flex-direction: column;
       gap: 6px;
-      max-height: 250px;
+      max-height: 200px;
       overflow-y: auto;
     }
 
-    .event-item {
+    .item-card {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -339,10 +332,9 @@
       padding: 8px 10px;
       border-radius: 6px;
       font-size: 0.85rem;
-      font-weight: 500;
     }
 
-    .event-item button {
+    .item-card button {
       background: none;
       border: none;
       color: var(--color-x);
@@ -357,11 +349,15 @@
 
   <div class="app-container">
     <div class="card">
-      <!-- STATS TOP BAR -->
+      <!-- STATS BAR -->
       <div class="stats-container">
         <div class="stat-card streak">
           <div class="stat-label">Sequência Limpa</div>
-          <div class="stat-value" id="streak-val" style="color: var(--color-accent);">Sem dias ruins há 0 dias</div>
+          <div class="stat-value" id="streak-val" style="color: var(--color-accent);">0 dias</div>
+        </div>
+        <div class="stat-card streak">
+          <div class="stat-label">Recorde Histórico</div>
+          <div class="stat-value" id="record-val" style="color: var(--color-accent);">24 dias</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Produtivos (V)</div>
@@ -399,26 +395,41 @@
       </div>
     </div>
 
-    <!-- SIDE DETAILS PANEL -->
+    <!-- SIDEBAR -->
     <div class="card">
-      <div class="panel-title" id="selected-date-display">Selecione um dia</div>
-
-      <div class="toggle-section">
-        <div class="stat-label">Status do Dia (Múltiplos)</div>
-        <div class="toggle-group">
-          <button class="toggle-btn" id="btn-toggle-v">V (Produtivo)</button>
-          <button class="toggle-btn" id="btn-toggle-r">R (Ruim)</button>
-          <button class="toggle-btn" id="btn-toggle-x">X (Inativo)</button>
+      <!-- SEÇÃO DA FACULDADE -->
+      <div class="sidebar-section">
+        <div class="panel-title">
+          <span>🎓 Faculdade (Avisos/Tarefas)</span>
         </div>
+        <div class="input-group">
+          <input type="text" id="uni-task-input" class="custom-input" placeholder="Nova tarefa da faculdade...">
+          <button class="btn btn-primary" id="add-uni-task-btn">+</button>
+        </div>
+        <ul class="item-list" id="uni-task-list"></ul>
       </div>
 
-      <div class="events-section">
-        <div class="stat-label" style="margin-bottom: 6px;">Compromissos & Tarefas</div>
-        <div class="event-input-group">
-          <input type="text" id="event-input" class="event-input" placeholder="Novo compromisso...">
-          <button class="btn" id="add-event-btn">+</button>
+      <!-- SEÇÃO DO DIA SELECIONADO -->
+      <div class="sidebar-section" style="margin-bottom: 0;">
+        <div class="panel-title" id="selected-date-display">Selecione um dia</div>
+
+        <div style="margin-bottom: 12px;">
+          <div class="stat-label">Status do Dia</div>
+          <div class="toggle-group">
+            <button class="toggle-btn" id="btn-toggle-v">V</button>
+            <button class="toggle-btn" id="btn-toggle-r">R</button>
+            <button class="toggle-btn" id="btn-toggle-x">X</button>
+          </div>
         </div>
-        <ul class="event-list" id="event-list"></ul>
+
+        <div>
+          <div class="stat-label" style="margin-bottom: 6px;">Compromissos do Dia</div>
+          <div class="input-group">
+            <input type="text" id="event-input" class="custom-input" placeholder="Novo evento...">
+            <button class="btn" id="add-event-btn">+</button>
+          </div>
+          <ul class="item-list" id="event-list"></ul>
+        </div>
       </div>
     </div>
   </div>
@@ -430,9 +441,60 @@
     let selectedDateStr = formatDateKey(new Date());
 
     let appData = JSON.parse(localStorage.getItem('cal_prod_data')) || {};
+    let uniTasks = JSON.parse(localStorage.getItem('cal_uni_tasks')) || [];
+
+    // Dados base da imagem
+    const initialImageData = {
+      "2026-09-28": { v: true, r: false, x: false },
+      "2026-09-29": { v: false, r: true, x: false },
+      "2026-09-30": { v: true, r: false, x: false },
+      "2026-10-01": { v: true, r: false, x: false },
+      "2026-10-02": { v: true, r: false, x: false },
+      "2026-10-03": { v: false, r: false, x: true },
+      "2026-10-04": { v: false, r: false, x: true },
+      "2026-10-05": { v: true, r: false, x: false },
+      "2026-10-06": { v: true, r: false, x: false },
+      "2026-10-07": { v: true, r: false, x: false },
+      "2026-10-08": { v: false, r: false, x: true },
+      "2026-10-09": { v: true, r: false, x: false },
+      "2026-10-10": { v: false, r: false, x: true },
+      "2026-10-11": { v: false, r: false, x: true },
+      "2026-10-12": { v: false, r: false, x: true },
+      "2026-10-13": { v: true, r: false, x: false },
+      "2026-10-14": { v: false, r: false, x: true },
+      "2026-10-15": { v: true, r: false, x: false },
+      "2026-10-16": { v: true, r: false, x: false },
+      "2026-10-17": { v: true, r: false, x: false },
+      "2026-10-18": { v: false, r: false, x: true },
+      "2026-10-19": { v: true, r: false, x: false },
+      "2026-10-20": { v: true, r: false, x: false },
+      "2026-10-21": { v: true, r: false, x: false },
+      "2026-10-22": { v: true, r: false, x: false },
+      "2026-10-23": { v: false, r: true, x: true },
+      "2026-10-24": { v: false, r: false, x: true },
+      "2026-10-25": { v: false, r: false, x: true },
+      "2026-10-26": { v: false, r: false, x: true, events: ["Agenda"] },
+      "2026-10-27": { v: false, r: true, x: true },
+      "2026-10-28": { v: false, r: true, x: false },
+      "2026-10-29": { v: true, r: false, x: false }
+    };
+
+    function loadInitialImagePreset() {
+      for (const [key, val] of Object.entries(initialImageData)) {
+        if (!appData[key]) {
+          appData[key] = val;
+        } else {
+          appData[key].v = val.v;
+          appData[key].r = val.r;
+          appData[key].x = val.x;
+        }
+      }
+      saveData();
+    }
 
     function saveData() {
       localStorage.setItem('cal_prod_data', JSON.stringify(appData));
+      localStorage.setItem('cal_uni_tasks', JSON.stringify(uniTasks));
     }
 
     function formatDateKey(date) {
@@ -443,9 +505,11 @@
     }
 
     function init() {
+      loadInitialImagePreset();
       setupEventListeners();
       renderCalendar();
       updateSidePanel();
+      renderUniTasks();
     }
 
     function setupEventListeners() {
@@ -473,6 +537,11 @@
       document.getElementById('add-event-btn').addEventListener('click', addEvent);
       document.getElementById('event-input').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') addEvent();
+      });
+
+      document.getElementById('add-uni-task-btn').addEventListener('click', addUniTask);
+      document.getElementById('uni-task-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addUniTask();
       });
     }
 
@@ -512,34 +581,67 @@
       }
     }
 
-    function calculateStreak() {
-      const today = new Date();
-      let streak = 0;
-      let checkDate = new Date(today);
+    function addUniTask() {
+      const input = document.getElementById('uni-task-input');
+      const val = input.value.trim();
+      if (!val) return;
 
-      while (true) {
+      uniTasks.push(val);
+      input.value = '';
+      saveData();
+      renderUniTasks();
+    }
+
+    function removeUniTask(index) {
+      uniTasks.splice(index, 1);
+      saveData();
+      renderUniTasks();
+    }
+
+    function renderUniTasks() {
+      const listEl = document.getElementById('uni-task-list');
+      listEl.innerHTML = '';
+
+      uniTasks.forEach((task, idx) => {
+        const li = document.createElement('li');
+        li.className = 'item-card';
+        li.innerHTML = `
+          <span>${task}</span>
+          <button onclick="removeUniTask(${idx})">&times;</button>
+        `;
+        listEl.appendChild(li);
+      });
+    }
+
+    function calculateStreaks() {
+      const allKeys = Object.keys(appData).sort();
+      let currentStreak = 0;
+      let maxStreak = 0;
+      let tempStreak = 0;
+
+      if (allKeys.length === 0) return { currentStreak: 0, maxStreak: 0 };
+
+      const minDate = new Date(allKeys[0] + 'T00:00:00');
+      const maxDate = new Date();
+      let checkDate = new Date(minDate);
+
+      while (checkDate <= maxDate) {
         const key = formatDateKey(checkDate);
         const dayData = appData[key];
 
         if (dayData && dayData.r) {
-          break;
+          tempStreak = 0;
+        } else {
+          tempStreak++;
+          if (tempStreak > maxStreak) {
+            maxStreak = tempStreak;
+          }
         }
-
-        if (checkDate <= today) {
-          streak++;
-        }
-
-        if (streak > 365) break;
-
-        checkDate.setDate(checkDate.getDate() - 1);
+        checkDate.setDate(checkDate.getDate() + 1);
       }
 
-      const todayKey = formatDateKey(today);
-      if (appData[todayKey] && appData[todayKey].r) {
-        streak = 0;
-      }
-
-      return streak;
+      currentStreak = tempStreak;
+      return { currentStreak, maxStreak };
     }
 
     function renderCalendar() {
@@ -601,13 +703,14 @@
         grid.appendChild(cell);
       }
 
-      // Update Header Stats
+      // Update Stats
       document.getElementById('count-v').textContent = monthV;
       document.getElementById('count-r').textContent = monthR;
       document.getElementById('count-x').textContent = monthX;
 
-      const streak = calculateStreak();
-      document.getElementById('streak-val').textContent = `Sem dias ruins há ${streak} dia${streak !== 1 ? 's' : ''}`;
+      const streaks = calculateStreaks();
+      document.getElementById('streak-val').textContent = `${streaks.currentStreak} dia${streaks.currentStreak !== 1 ? 's' : ''}`;
+      document.getElementById('record-val').textContent = `${streaks.maxStreak} dia${streaks.maxStreak !== 1 ? 's' : ''}`;
     }
 
     function createCell(date, isOtherMonth) {
@@ -623,7 +726,6 @@
 
       const dayData = appData[dateKey];
 
-      // Day Header (Number + Flag if events exist)
       const headerEl = document.createElement('div');
       headerEl.className = 'day-header';
 
@@ -703,7 +805,7 @@
       if (dayData.events && dayData.events.length > 0) {
         dayData.events.forEach((evt, idx) => {
           const li = document.createElement('li');
-          li.className = 'event-item';
+          li.className = 'item-card';
           li.innerHTML = `
             <span>${evt}</span>
             <button onclick="removeEvent(${idx})">&times;</button>
