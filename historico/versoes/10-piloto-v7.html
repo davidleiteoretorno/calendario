@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planejamento Semanal & Produtividade</title>
+  <style>
+    :root {
+      --bg-main: #f0f4f9;
+      --card-bg: #ffffff;
+      --border-color: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+
+      /* Cores dos Botões Circulares de Status */
+      --status-v: #22c55e;
+      --status-v-bg: #dcfce7;
+      --status-r: #f97316;
+      --status-r-bg: #ffedd5;
+      --status-x: #ef4444;
+      --status-x-bg: #fee2e2;
+
+      /* Tags Coloridas */
+      --tag-purple-bg: #ede9fe;
+      --tag-purple-txt: #6d28d9;
+      --tag-orange-bg: #ffedd5;
+      --tag-orange-txt: #c2410c;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      padding: 24px;
+      min-height: 100vh;
+    }
+
+    .app-container {
+      max-width: 1480px;
+      margin: 0 auto;
+    }
+
+    /* ==========================================================================
+       BARRA SUPERIOR (HEADER)
+       ========================================================================== */
+    .top-navbar {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+      margin-bottom: 24px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .nav-tab-item {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .nav-tab-item:hover {
+      background: #f1f5f9;
+      color: var(--text-main);
+    }
+
+    .nav-tab-item.active {
+      color: var(--primary);
+    }
+
+    .nav-tab-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: -12px;
+      left: 10%;
+      width: 80%;
+      height: 3px;
+      background-color: var(--primary);
+      border-radius: 3px;
+    }
+
+    .header-badges {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .badge-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .badge-fire {
+      background: #f3e8ff;
+      color: #7e22ce;
+    }
+
+    .badge-check {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    /* ==========================================================================
+       PLANEJAMENTO SEMANAL (WEEKLY PLANNER TRADUZIDO E REDESENHADO)
+       ========================================================================== */
+    .page-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-bottom: 20px;
+      color: #0f172a;
+    }
+
+    .weekly-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 1250px) {
+      .weekly-grid {
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      }
+    }
+
+    /* Super Card do Dia */
+    .day-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 18px 14px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      border: 1px solid #f1f5f9;
+    }
+
+    .day-header {
+      text-align: center;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #f8fafc;
+    }
+
+    .day-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    /* Seções de Assuntos (Física, PMAL, etc.) */
+    .subject-block {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: #fafafa;
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid #f1f5f9;
+    }
+
+    .subject-title-input {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: var(--text-main);
+      border: none;
+      background: transparent;
+      outline: none;
+      width: 100%;
+      padding-bottom: 2px;
+    }
+
+    .subject-title-input:focus {
+      border-bottom: 1px dashed var(--primary);
+    }
+
+    /* Lista de Tarefas / Tópicos (Agradável e Harmoniosa) */
+    .task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #ffffff;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid #f1f5f9;
+      transition: all 0.2s ease;
+    }
+
+    .task-item:hover {
+      border-color: #cbd5e1;
+    }
+
+    .dot-indicator {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #3b82f6;
+      flex-shrink: 0;
+    }
+
+    .dot-orange {
+      background: #f97316;
+    }
+
+    .task-text-input {
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 0.8rem;
+      color: var(--text-main);
+      width: 100%;
+      font-weight: 500;
+    }
+
+    .task-checkbox {
+      width: 15px;
+      height: 15px;
+      accent-color: var(--primary);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .task-item.completed {
+      background: #f8fafc;
+      opacity: 0.65;
+    }
+
+    .task-item.completed .task-text-input {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    /* Botão de Adicionar Tarefa */
+    .btn-add {
+      background: #ffffff;
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 6px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-align: center;
+      font-weight: 700;
+      transition: all 0.2s ease;
+      margin-top: 4px;
+    }
+
+    .btn-add:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: #f5f3ff;
+    }
+
+    /* Botões Circulares de Status (V, R, X) na Base de Cada Dia */
+    .status-circles-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      margin-top: auto;
+      padding-top: 6px;
+    }
+
+    .status-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-circles {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .circle-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 800;
+      background: #e2e8f0;
+      color: #64748b;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    }
+
+    .circle-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .circle-v.active {
+      background: var(--status-v-bg);
+      color: var(--status-v);
+      border-color: var(--status-v);
+      transform: scale(1.1);
+    }
+
+    .circle-r.active {
+      background: var(--status-r-bg);
+      color: var(--status-r);
+      border-color: var(--status-r);
+      transform: scale(1.1);
+    }
+
+    .circle-x.active {
+      background: var(--status-x-bg);
+      color: var(--status-x);
+      border-color: var(--status-x);
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- BARRA SUPERIOR COM ABAS (MANTIDAS PRONTAS SEM AÇÃO) -->
+    <header class="top-navbar">
+      <nav class="nav-tabs">
+        <button class="nav-tab-item active" title="Planejamento Semanal"><span>🏠</span></button>
+        <button class="nav-tab-item" title="Calendário Mensal"><span>📅</span></button>
+        <button class="nav-tab-item" title="Produtividade Macro"><span>📊</span></button>
+        <button class="nav-tab-item" title="Eventos e Prazos"><span>📆</span></button>
+        <button class="nav-tab-item" title="Perfil"><span>👤</span></button>
+      </nav>
+
+      <div class="header-badges">
+        <div class="badge-pill badge-fire">
+          <span>🔥</span> <span id="streak-count">25 Dias Limpos</span>
+        </div>
+        <div class="badge-pill badge-check">
+          <span>✓</span> <span>100% Concluído</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- TÍTULO DA PÁGINA -->
+    <h1 class="page-title">Planejamento Semanal</h1>
+
+    <!-- GRID DOS 7 DIAS DA SEMANA -->
+    <main class="weekly-grid" id="weekly-grid"></main>
+
+  </div>
+
+  <script>
+    const DAYS_PT = [
+      { id: "seg", name: "Segunda-feira" },
+      { id: "ter", name: "Terça-feira" },
+      { id: "qua", name: "Quarta-feira" },
+      { id: "qui", name: "Quinta-feira" },
+      { id: "sex", name: "Sexta-feira" },
+      { id: "sab", name: "Sábado" },
+      { id: "dom", name: "Domingo" }
+    ];
+
+    // Dados Iniciais da Semana
+    const defaultWeeklyData = {
+      seg: {
+        status: 'v',
+        blocks: [
+          { title: "Faculdade de Física", type: "blue", tasks: [{ text: "Vetores: tratamento geométrico", done: true }, { text: "Vetores: tratamento algébrico", done: false }] },
+          { title: "Concurso PMAL", type: "orange", tasks: [{ text: "Português: Crase e Pontuação", done: false }] }
+        ]
+      },
+      ter: {
+        status: 'none',
+        blocks: [
+          { title: "Faculdade de Física", type: "blue", tasks: [{ text: "Produto escalar e projeção", done: false }, { text: "Fatoração & Apêndice A", done: false }] },
+          { title: "Concurso PMAL", type: "orange", tasks: [{ text: "Informática: Conceitos de Nuvem", done: false }] }
+        ]
+      },
+      qua: {
+        status: 'v',
+        blocks: [
+          { title: "Faculdade de Física", type: "blue", tasks: [{ text: "Estrutura Atômica e Tabela", done: true }, { text: "Funções & Inversas", done: false }] },
+          { title: "Concurso PMAL", type: "orange", tasks: [{ text: "RLM: Regra de Três", done: true }] }
+        ]
+      },
+      qui: {
+        status: 'v',
+        blocks: [
+          { title: "Faculdade de Física", type: "blue", tasks: [{ text: "Conjuntos e Funções", done: false }] },
+          { title: "Concurso PMAL", type: "orange", tasks: [{ text: "Direito: Direitos Humanos", done: false }] }
+        ]
+      },
+      sex: {
+        status: 'none',
+        blocks: [
+          { title: "Faculdade de Física", type: "blue", tasks: [{ text: "Matrizes e Determinantes", done: false }, { text: "Limites e Continuidade", done: false }] },
+          { title: "Concurso PMAL", type: "orange", tasks: [{ text: "Português: Ortografia", done: false }] }
+        ]
+      },
+      sab: {
+        status: 'r',
+        blocks: [
+          { title: "Revisão Geral", type: "blue", tasks: [{ text: "Revisar Stewart Apêndice B", done: false }] },
+          { title: "Simulado PMAL", type: "orange", tasks: [{ text: "Resolver 30 questões Qconcursos", done: false }] }
+        ]
+      },
+      dom: {
+        status: 'none',
+        blocks: [
+          { title: "Descanso / Planejamento", type: "blue", tasks: [{ text: "Organizar cronograma da semana", done: false }] }
+        ]
+      }
+    };
+
+    let weeklyData = JSON.parse(localStorage.getItem('v4_weekly_data')) || defaultWeeklyData;
+
+    function saveWeeklyData() {
+      localStorage.setItem('v4_weekly_data', JSON.stringify(weeklyData));
+    }
+
+    function renderWeeklyGrid() {
+      const container = document.getElementById('weekly-grid');
+      container.innerHTML = '';
+
+      DAYS_PT.forEach(day => {
+        const dayData = weeklyData[day.id] || { status: 'none', blocks: [] };
+
+        const card = document.createElement('div');
+        card.className = 'day-card';
+
+        // Header do Dia
+        let html = `
+          <div class="day-header">
+            <h2 class="day-title">${day.name}</h2>
+          </div>
+        `;
+
+        // Blocos de Assuntos (Física, PMAL, etc.)
+        dayData.blocks.forEach((block, bIdx) => {
+          const dotClass = block.type === 'orange' ? 'dot-orange' : '';
+          html += `
+            <div class="subject-block">
+              <input type="text" class="subject-title-input" value="${block.title}" onchange="updateBlockTitle('${day.id}', ${bIdx}, this.value)">
+              <div class="task-list">
+          `;
+
+          block.tasks.forEach((task, tIdx) => {
+            html += `
+              <div class="task-item ${task.done ? 'completed' : ''}">
+                <span class="dot-indicator ${dotClass}"></span>
+                <input type="text" class="task-text-input" value="${task.text}" onchange="updateTaskText('${day.id}', ${bIdx}, ${tIdx}, this.value)">
+                <input type="checkbox" class="task-checkbox" ${task.done ? 'checked' : ''} onchange="toggleTaskDone('${day.id}', ${bIdx}, ${tIdx})">
+              </div>
+            `;
+          });
+
+          html += `
+              </div>
+              <button class="btn-add" onclick="addTask('${day.id}', ${bIdx})">+ Adicionar Tarefa</button>
+            </div>
+          `;
+        });
+
+        // Botões Circulares de Status (V, R Laranja, X)
+        const isV = dayData.status === 'v' ? 'active' : '';
+        const isR = dayData.status === 'r' ? 'active' : '';
+        const isX = dayData.status === 'x' ? 'active' : '';
+
+        html += `
+          <div class="status-circles-container">
+            <span class="status-label">Status do Dia</span>
+            <div class="status-circles">
+              <button class="circle-btn circle-v ${isV}" onclick="setDayStatus('${day.id}', 'v')" title="Produtivo (V)">V</button>
+              <button class="circle-btn circle-r ${isR}" onclick="setDayStatus('${day.id}', 'r')" title="Ruim / Desvio (R)">R</button>
+              <button class="circle-btn circle-x ${isX}" onclick="setDayStatus('${day.id}', 'x')" title="Inativo (X)">X</button>
+            </div>
+          </div>
+        `;
+
+        card.innerHTML = html;
+        container.appendChild(card);
+      });
+    }
+
+    function updateBlockTitle(dayId, blockIdx, newTitle) {
+      weeklyData[dayId].blocks[blockIdx].title = newTitle;
+      saveWeeklyData();
+    }
+
+    function updateTaskText(dayId, blockIdx, taskIdx, newText) {
+      weeklyData[dayId].blocks[blockIdx].tasks[taskIdx].text = newText;
+      saveWeeklyData();
+    }
+
+    function toggleTaskDone(dayId, blockIdx, taskIdx) {
+      const current = weeklyData[dayId].blocks[blockIdx].tasks[taskIdx].done;
+      weeklyData[dayId].blocks[blockIdx].tasks[taskIdx].done = !current;
+      saveWeeklyData();
+      renderWeeklyGrid();
+    }
+
+    function addTask(dayId, blockIdx) {
+      weeklyData[dayId].blocks[blockIdx].tasks.push({ text: "Nova tarefa...", done: false });
+      saveWeeklyData();
+      renderWeeklyGrid();
+    }
+
+    function setDayStatus(dayId, statusType) {
+      if (weeklyData[dayId].status === statusType) {
+        weeklyData[dayId].status = 'none';
+      } else {
+        weeklyData[dayId].status = statusType;
+      }
+      saveWeeklyData();
+      renderWeeklyGrid();
+    }
+
+    // Inicialização
+    renderWeeklyGrid();
+  </script>
+</body>
+</html>
