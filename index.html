@@ -82,7 +82,7 @@ body {
 }
 
 /* ==========================================================================
-   3. ESTRUTURA DOS CARDS DE CONTEÚDO (DASHBOARD)
+   3. CARDS E LAYOUT PRINCIPAL
    ========================================================================== */
 .card {
   background: var(--card-bg);
@@ -93,7 +93,6 @@ body {
   margin-bottom: 20px;
 }
 
-/* Grid do Calendário + Painel Lateral */
 .calendar-layout {
   display: grid;
   grid-template-columns: 1fr 340px;
@@ -104,7 +103,7 @@ body {
   .calendar-layout { grid-template-columns: 1fr; }
 }
 
-/* Cards de Estatísticas no Topo */
+/* Cards de Estatísticas */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
@@ -167,7 +166,7 @@ body {
 .btn-primary { background: var(--primary); color: #fff; border: none; }
 .btn-primary:hover { background: var(--primary-hover); }
 
-/* Grid dos Dias do Mês */
+/* Grid dos Dias */
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -257,7 +256,7 @@ body {
 .item-card button { background: none; border: none; color: var(--color-x); cursor: pointer; font-weight: bold; }
 
 /* ==========================================================================
-   4. TABELAS E CARDS DA GRADUAÇÃO E CONCURSOS
+   4. ESTILOS DAS OUTRAS ABAS (FÍSICA E PMAL)
    ========================================================================== */
 .progress-bar-bg { width: 100%; height: 10px; background: var(--border-color); border-radius: 999px; overflow: hidden; margin: 10px 0 20px; }
 .progress-bar-fill { height: 100%; width: 0%; background: var(--primary); transition: width 0.3s; }
@@ -297,7 +296,7 @@ td { padding: 12px 10px; border-bottom: 1px solid var(--border-color); vertical-
 <div id="tab-calendario" class="tab-content active">
   <div class="calendar-layout">
     
-    <!-- CARD DA ESQUERDA: GRID DO MÊS -->
+    <!-- CARD DA ESQUERDA: GRID DO MÊS E ESTATÍSTICAS -->
     <div class="card">
       <div class="stats-grid">
         <div class="stat-card highlight">
