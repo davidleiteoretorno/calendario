@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard de Produtividade & Estudos</title>
+  <style>
+    /* ==========================================================================
+       1. VARIÁVEIS DE CORES E TEMA (ESTILO DASHBOARD CLEAN)
+       ========================================================================== */
+    :root {
+      --bg-main: #f0f4f9;          /* Fundo geral em tom cinza-azulado leve */
+      --card-bg: #ffffff;          /* Fundo dos cards brancos */
+      --border-color: #e2e8f0;     /* Bordas suaves */
+      --text-main: #0f172a;        /* Texto principal */
+      --text-muted: #64748b;       /* Texto secundário */
+      --primary: #4f46e5;          /* Roxo/Azul principal */
+      --primary-hover: #4338ca;
+
+      /* Status Circulares */
+      --status-v: #16a34a;
+      --status-v-bg: #dcfce7;
+      --status-r: #ea580c;
+      --status-r-bg: #ffedd5;
+      --status-x: #dc2626;
+      --status-x-bg: #fee2e2;
+
+      /* Cores dos Subtópicos */
+      --subtask-bg: #ffffff;
+      --subtask-border: #cbd5e1;
+      --subtask-accent: #3b82f6;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      padding: 24px;
+      min-height: 100vh;
+    }
+
+    .app-container {
+      max-width: 1550px;
+      margin: 0 auto;
+    }
+
+    /* ==========================================================================
+       BARRA SUPERIOR (HEADER)
+       ========================================================================== */
+    .top-navbar {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+      margin-bottom: 24px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .nav-tab-item {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .nav-tab-item:hover {
+      background: #f1f5f9;
+      color: var(--text-main);
+    }
+
+    .nav-tab-item.active {
+      color: var(--primary);
+    }
+
+    .nav-tab-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: -12px;
+      left: 10%;
+      width: 80%;
+      height: 3px;
+      background-color: var(--primary);
+      border-radius: 3px;
+    }
+
+    .header-badges {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .badge-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .badge-fire {
+      background: #f3e8ff;
+      color: #7e22ce;
+    }
+
+    .badge-check {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    /* ==========================================================================
+       PLANEJAMENTO SEMANAL
+       ========================================================================== */
+    .page-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-bottom: 20px;
+      color: #0f172a;
+    }
+
+    .weekly-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 1400px) {
+      .weekly-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+    }
+
+    /* Super Card do Dia */
+    .day-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 16px 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      border: 1px solid #e2e8f0;
+      min-height: 520px;
+    }
+
+    .day-header {
+      text-align: center;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .day-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    /* Bloco do Tópico Principal */
+    .subjects-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .subject-block {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: #f8fafc;
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      position: relative;
+    }
+
+    .subject-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+    }
+
+    .subject-title-input {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: var(--primary);
+      border: none;
+      background: transparent;
+      outline: none;
+      width: 100%;
+      padding: 2px 0;
+    }
+
+    .subject-title-input:focus {
+      border-bottom: 1px dashed var(--primary);
+    }
+
+    .btn-remove-subject {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: bold;
+      padding: 0 4px;
+    }
+
+    .btn-remove-subject:hover {
+      color: #ef4444;
+    }
+
+    /* Lista de Subtópicos Diferenciáveis */
+    .subtask-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .subtask-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--subtask-bg);
+      padding: 7px 9px;
+      border-radius: 8px;
+      border: 1px solid var(--subtask-border);
+      border-left: 4px solid var(--subtask-accent);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      transition: all 0.2s ease;
+    }
+
+    .subtask-item:hover {
+      border-color: #94a3b8;
+      border-left-color: var(--primary);
+      transform: translateY(-1px);
+    }
+
+    .subtask-checkbox {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--primary);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .subtask-text-input {
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 0.8rem;
+      color: var(--text-main);
+      width: 100%;
+      font-weight: 600;
+    }
+
+    .subtask-item.completed {
+      background: #f1f5f9;
+      border-left-color: #94a3b8;
+      opacity: 0.7;
+    }
+
+    .subtask-item.completed .subtask-text-input {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .btn-remove-subtask {
+      background: none;
+      border: none;
+      color: #cbd5e1;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: bold;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .subtask-item:hover .btn-remove-subtask {
+      opacity: 1;
+    }
+
+    .btn-remove-subtask:hover {
+      color: #ef4444;
+    }
+
+    /* Botão de Adicionar Subtópico */
+    .btn-add-subtask {
+      background: #ffffff;
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 5px;
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-align: center;
+      font-weight: 700;
+      transition: all 0.2s ease;
+    }
+
+    .btn-add-subtask:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: #f5f3ff;
+    }
+
+    /* Botão de Adicionar Tópico Principal */
+    .btn-add-main-subject {
+      background: #f1f5f9;
+      border: 1px dashed #94a3b8;
+      border-radius: 12px;
+      padding: 8px;
+      font-size: 0.78rem;
+      color: #475569;
+      cursor: pointer;
+      text-align: center;
+      font-weight: 800;
+      transition: all 0.2s ease;
+    }
+
+    .btn-add-main-subject:hover {
+      background: #e2e8f0;
+      color: var(--text-main);
+    }
+
+    /* Botões Circulares de Status (V, R, X) na Base de Cada Dia */
+    .status-circles-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      margin-top: auto;
+      padding-top: 10px;
+      border-top: 1px solid #f1f5f9;
+    }
+
+    .status-label {
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-circles {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .circle-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 800;
+      background: #f1f5f9;
+      color: #64748b;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    }
+
+    .circle-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .circle-v.active {
+      background: var(--status-v-bg);
+      color: var(--status-v);
+      border-color: var(--status-v);
+      transform: scale(1.1);
+    }
+
+    .circle-r.active {
+      background: var(--status-r-bg);
+      color: var(--status-r);
+      border-color: var(--status-r);
+      transform: scale(1.1);
+    }
+
+    .circle-x.active {
+      background: var(--status-x-bg);
+      color: var(--status-x);
+      border-color: var(--status-x);
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- BARRA SUPERIOR -->
+    <header class="top-navbar">
+      <nav class="nav-tabs">
+        <button class="nav-tab-item active" title="Planejamento Semanal"><span>🏠</span></button>
+        <button class="nav-tab-item" title="Calendário Mensal"><span>📅</span></button>
+        <button class="nav-tab-item" title="Produtividade Macro"><span>📊</span></button>
+        <button class="nav-tab-item" title="Eventos e Prazos"><span>📆</span></button>
+        <button class="nav-tab-item" title="Perfil"><span>👤</span></button>
+      </nav>
+
+      <div class="header-badges">
+        <div class="badge-pill badge-fire">
+          <span>🔥</span> <span id="streak-count">25 Dias de Sequência</span>
+        </div>
+        <div class="badge-pill badge-check">
+          <span>✓</span> <span>100% Concluído</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- TÍTULO DA PÁGINA -->
+    <h1 class="page-title">Planejamento Semanal</h1>
+
+    <!-- GRID DOS 7 DIAS DA SEMANA -->
+    <main class="weekly-grid" id="weekly-grid"></main>
+
+  </div>
+
+  <script>
+    const DAYS_OF_WEEK = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"];
+
+    // Dados Iniciais da Semana
+    const initialWeekData = [
+      {
+        day: "Segunda-feira",
+        status: "v",
+        subjects: [
+          {
+            title: "Faculdade de Física",
+            subtasks: [
+              { text: "Vetores: tratamento geométrico", done: true },
+              { text: "Vetores: tratamento algébrico", done: false }
+            ]
+          },
+          {
+            title: "Concurso PMAL",
+            subtasks: [
+              { text: "Português: Crase e Pontuação", done: false }
+            ]
+          }
+        ]
+      },
+      {
+        day: "Terça-feira",
+        status: "v",
+        subjects: [
+          {
+            title: "Faculdade de Física",
+            subtasks: [
+              { text: "Produto escalar e projeção", done: false },
+              { text: "Fatoração & Apêndice A", done: false }
+            ]
+          }
+        ]
+      },
+      {
+        day: "Quarta-feira",
+        status: "v",
+        subjects: [
+          {
+            title: "Faculdade de Física",
+            subtasks: [
+              { text: "Estrutura Atômica e Tabela", done: true },
+              { text: "Funções & Inversas", done: false }
+            ]
+          }
+        ]
+      },
+      {
+        day: "Quinta-feira",
+        status: "r",
+        subjects: [
+          {
+            title: "Faculdade de Física",
+            subtasks: [
+              { text: "Conjuntos e Funções", done: false }
+            ]
+          }
+        ]
+      },
+      {
+        day: "Sexta-feira",
+        status: "v",
+        subjects: [
+          {
+            title: "Faculdade de Física",
+            subtasks: [
+              { text: "Limites e Continuidade", done: false }
+            ]
+          }
+        ]
+      },
+      {
+        day: "Sábado",
+        status: "x",
+        subjects: [
+          {
+            title: "Revisão Geral",
+            subtasks: [
+              { text: "Resolução de Exercícios Stewart", done: false }
+            ]
+          }
+        ]
+      },
+      {
+        day: "Domingo",
+        status: "x",
+        subjects: [
+          {
+            title: "Descanso / Planejamento",
+            subtasks: [
+              { text: "Organização da Próxima Semana", done: false }
+            ]
+          }
+        ]
+      }
+    ];
+
+    let weekData = JSON.parse(localStorage.getItem('weekly_planner_data')) || initialWeekData;
+
+    function saveWeekData() {
+      localStorage.setItem('weekly_planner_data', JSON.stringify(weekData));
+    }
+
+    function renderWeeklyGrid() {
+      const grid = document.getElementById('weekly-grid');
+      grid.innerHTML = '';
+
+      weekData.forEach((dayObj, dayIdx) => {
+        const card = document.createElement('div');
+        card.className = 'day-card';
+
+        // Cabeçalho do Dia
+        let html = `
+          <div class="day-header">
+            <h3 class="day-title">${dayObj.day}</h3>
+          </div>
+          <div class="subjects-container" id="subjects-day-${dayIdx}">
+        `;
+
+        // Tópicos Principais
+        dayObj.subjects.forEach((subj, subjIdx) => {
+          html += `
+            <div class="subject-block">
+              <div class="subject-header">
+                <input type="text" class="subject-title-input" value="${subj.title}" onchange="updateSubjectTitle(${dayIdx}, ${subjIdx}, this.value)" placeholder="Título da Matéria...">
+                <button class="btn-remove-subject" onclick="removeSubject(${dayIdx}, ${subjIdx})" title="Remover Matéria">&times;</button>
+              </div>
+              <div class="subtask-list">
+          `;
+
+          // Subtópicos
+          subj.subtasks.forEach((sub, subIdx) => {
+            html += `
+              <div class="subtask-item ${sub.done ? 'completed' : ''}">
+                <input type="checkbox" class="subtask-checkbox" ${sub.done ? 'checked' : ''} onchange="toggleSubtask(${dayIdx}, ${subjIdx}, ${subIdx})">
+                <input type="text" class="subtask-text-input" value="${sub.text}" onchange="updateSubtaskText(${dayIdx}, ${subjIdx}, ${subIdx}, this.value)" placeholder="Descreva o subtópico...">
+                <button class="btn-remove-subtask" onclick="removeSubtask(${dayIdx}, ${subjIdx}, ${subIdx})" title="Remover Subtópico">&times;</button>
+              </div>
+            `;
+          });
+
+          html += `
+              </div>
+              ${subj.subtasks.length < 10 ? `<button class="btn-add-subtask" onclick="addSubtask(${dayIdx}, ${subjIdx})">+ Adicionar Subtópico</button>` : ''}
+            </div>
+          `;
+        });
+
+        html += `</div>`;
+
+        // Botão para adicionar Tópico Principal (máximo 5)
+        if (dayObj.subjects.length < 5) {
+          html += `<button class="btn-add-main-subject" onclick="addSubject(${dayIdx})">+ Adicionar Tópico Principal</button>`;
+        }
+
+        // Seletor Circular de Status do Dia
+        html += `
+          <div class="status-circles-container">
+            <span class="status-label">Status do Dia</span>
+            <div class="status-circles">
+              <button class="circle-btn circle-v ${dayObj.status === 'v' ? 'active' : ''}" onclick="setStatus(${dayIdx}, 'v')">V</button>
+              <button class="circle-btn circle-r ${dayObj.status === 'r' ? 'active' : ''}" onclick="setStatus(${dayIdx}, 'r')">R</button>
+              <button class="circle-btn circle-x ${dayObj.status === 'x' ? 'active' : ''}" onclick="setStatus(${dayIdx}, 'x')">X</button>
+            </div>
+          </div>
+        `;
+
+        card.innerHTML = html;
+        grid.appendChild(card);
+      });
+    }
+
+    // Funções de Alteração de Dados
+    function updateSubjectTitle(dayIdx, subjIdx, val) {
+      weekData[dayIdx].subjects[subjIdx].title = val;
+      saveWeekData();
+    }
+
+    function updateSubtaskText(dayIdx, subjIdx, subIdx, val) {
+      weekData[dayIdx].subjects[subjIdx].subtasks[subIdx].text = val;
+      saveWeekData();
+    }
+
+    function toggleSubtask(dayIdx, subjIdx, subIdx) {
+      weekData[dayIdx].subjects[subjIdx].subtasks[subIdx].done = !weekData[dayIdx].subjects[subjIdx].subtasks[subIdx].done;
+      saveWeekData();
+      renderWeeklyGrid();
+    }
+
+    function addSubject(dayIdx) {
+      if (weekData[dayIdx].subjects.length < 5) {
+        weekData[dayIdx].subjects.push({
+          title: "Novo Tópico Principal",
+          subtasks: [{ text: "Novo subtópico", done: false }]
+        });
+        saveWeekData();
+        renderWeeklyGrid();
+      }
+    }
+
+    function removeSubject(dayIdx, subjIdx) {
+      weekData[dayIdx].subjects.splice(subjIdx, 1);
+      saveWeekData();
+      renderWeeklyGrid();
+    }
+
+    function addSubtask(dayIdx, subjIdx) {
+      if (weekData[dayIdx].subjects[subjIdx].subtasks.length < 10) {
+        weekData[dayIdx].subjects[subjIdx].subtasks.push({ text: "Novo subtópico", done: false });
+        saveWeekData();
+        renderWeeklyGrid();
+      }
+    }
+
+    function removeSubtask(dayIdx, subjIdx, subIdx) {
+      weekData[dayIdx].subjects[subjIdx].subtasks.splice(subIdx, 1);
+      saveWeekData();
+      renderWeeklyGrid();
+    }
+
+    function setStatus(dayIdx, statusType) {
+      weekData[dayIdx].status = weekData[dayIdx].status === statusType ? '' : statusType;
+      saveWeekData();
+      renderWeeklyGrid();
+    }
+
+    renderWeeklyGrid();
+  </script>
+</body>
+</html>

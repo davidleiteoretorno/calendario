@@ -3,30 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Planejamento Semanal & Produtividade</title>
+  <title>Dashboard de Produtividade & Estudos</title>
   <style>
+    /* ==========================================================================
+       1. VARIÁVEIS DE CORES E TEMA (ESTILO DASHBOARD CLEAN)
+       ========================================================================== */
     :root {
-      --bg-main: #f0f4f9;
-      --card-bg: #ffffff;
-      --border-color: #e2e8f0;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --primary: #4f46e5;
+      --bg-main: #f0f4f9;          /* Fundo geral em tom cinza-azulado leve */
+      --card-bg: #ffffff;          /* Fundo dos cards brancos */
+      --border-color: #e2e8f0;     /* Bordas suaves */
+      --text-main: #0f172a;        /* Texto principal */
+      --text-muted: #64748b;       /* Texto secundário */
+      --primary: #4f46e5;          /* Roxo/Azul principal */
       --primary-hover: #4338ca;
 
-      /* Cores dos Botões Circulares de Status */
-      --status-v: #22c55e;
+      /* Status Circulares */
+      --status-v: #16a34a;
       --status-v-bg: #dcfce7;
-      --status-r: #f97316;
+      --status-r: #ea580c;
       --status-r-bg: #ffedd5;
-      --status-x: #ef4444;
+      --status-x: #dc2626;
       --status-x-bg: #fee2e2;
 
-      /* Tags Coloridas */
-      --tag-purple-bg: #ede9fe;
-      --tag-purple-txt: #6d28d9;
-      --tag-orange-bg: #ffedd5;
-      --tag-orange-txt: #c2410c;
+      /* Cores dos Subtópicos */
+      --subtask-bg: #ffffff;
+      --subtask-border: #cbd5e1;
+      --subtask-accent: #3b82f6;
     }
 
     * {
@@ -44,7 +46,7 @@
     }
 
     .app-container {
-      max-width: 1480px;
+      max-width: 1550px;
       margin: 0 auto;
     }
 
@@ -130,7 +132,7 @@
     }
 
     /* ==========================================================================
-       PLANEJAMENTO SEMANAL (WEEKLY PLANNER TRADUZIDO E REDESENHADO)
+       PLANEJAMENTO SEMANAL
        ========================================================================== */
     .page-title {
       font-size: 1.6rem;
@@ -145,9 +147,9 @@
       gap: 16px;
     }
 
-    @media (max-width: 1250px) {
+    @media (max-width: 1400px) {
       .weekly-grid {
-        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       }
     }
 
@@ -155,18 +157,19 @@
     .day-card {
       background: var(--card-bg);
       border-radius: 20px;
-      padding: 18px 14px;
+      padding: 16px 12px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
       display: flex;
       flex-direction: column;
-      gap: 18px;
-      border: 1px solid #f1f5f9;
+      gap: 14px;
+      border: 1px solid #e2e8f0;
+      min-height: 520px;
     }
 
     .day-header {
       text-align: center;
-      padding-bottom: 4px;
-      border-bottom: 1px solid #f8fafc;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #f1f5f9;
     }
 
     .day-title {
@@ -175,113 +178,171 @@
       color: #0f172a;
     }
 
-    /* Seções de Assuntos (Física, PMAL, etc.) */
+    /* Bloco do Tópico Principal */
+    .subjects-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
     .subject-block {
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      background: #fafafa;
+      gap: 8px;
+      background: #f8fafc;
       padding: 10px;
       border-radius: 12px;
-      border: 1px solid #f1f5f9;
+      border: 1px solid #e2e8f0;
+      position: relative;
+    }
+
+    .subject-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
     }
 
     .subject-title-input {
       font-size: 0.88rem;
       font-weight: 800;
-      color: var(--text-main);
+      color: var(--primary);
       border: none;
       background: transparent;
       outline: none;
       width: 100%;
-      padding-bottom: 2px;
+      padding: 2px 0;
     }
 
     .subject-title-input:focus {
       border-bottom: 1px dashed var(--primary);
     }
 
-    /* Lista de Tarefas / Tópicos (Agradável e Harmoniosa) */
-    .task-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+    .btn-remove-subject {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: bold;
+      padding: 0 4px;
     }
 
-    .task-item {
+    .btn-remove-subject:hover {
+      color: #ef4444;
+    }
+
+    /* Lista de Subtópicos Diferenciáveis */
+    .subtask-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .subtask-item {
       display: flex;
       align-items: center;
       gap: 8px;
-      background: #ffffff;
-      padding: 6px 8px;
+      background: var(--subtask-bg);
+      padding: 7px 9px;
       border-radius: 8px;
-      border: 1px solid #f1f5f9;
+      border: 1px solid var(--subtask-border);
+      border-left: 4px solid var(--subtask-accent);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
       transition: all 0.2s ease;
     }
 
-    .task-item:hover {
-      border-color: #cbd5e1;
+    .subtask-item:hover {
+      border-color: #94a3b8;
+      border-left-color: var(--primary);
+      transform: translateY(-1px);
     }
 
-    .dot-indicator {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #3b82f6;
+    .subtask-checkbox {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--primary);
+      cursor: pointer;
       flex-shrink: 0;
     }
 
-    .dot-orange {
-      background: #f97316;
-    }
-
-    .task-text-input {
+    .subtask-text-input {
       border: none;
       background: transparent;
       outline: none;
       font-size: 0.8rem;
       color: var(--text-main);
       width: 100%;
-      font-weight: 500;
+      font-weight: 600;
     }
 
-    .task-checkbox {
-      width: 15px;
-      height: 15px;
-      accent-color: var(--primary);
-      cursor: pointer;
-      flex-shrink: 0;
+    .subtask-item.completed {
+      background: #f1f5f9;
+      border-left-color: #94a3b8;
+      opacity: 0.7;
     }
 
-    .task-item.completed {
-      background: #f8fafc;
-      opacity: 0.65;
-    }
-
-    .task-item.completed .task-text-input {
+    .subtask-item.completed .subtask-text-input {
       text-decoration: line-through;
       color: var(--text-muted);
     }
 
-    /* Botão de Adicionar Tarefa */
-    .btn-add {
+    .btn-remove-subtask {
+      background: none;
+      border: none;
+      color: #cbd5e1;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: bold;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .subtask-item:hover .btn-remove-subtask {
+      opacity: 1;
+    }
+
+    .btn-remove-subtask:hover {
+      color: #ef4444;
+    }
+
+    /* Botão de Adicionar Subtópico */
+    .btn-add-subtask {
       background: #ffffff;
       border: 1px dashed #cbd5e1;
       border-radius: 8px;
-      padding: 6px;
-      font-size: 0.75rem;
+      padding: 5px;
+      font-size: 0.73rem;
       color: var(--text-muted);
       cursor: pointer;
       text-align: center;
       font-weight: 700;
       transition: all 0.2s ease;
-      margin-top: 4px;
     }
 
-    .btn-add:hover {
+    .btn-add-subtask:hover {
       border-color: var(--primary);
       color: var(--primary);
       background: #f5f3ff;
+    }
+
+    /* Botão de Adicionar Tópico Principal */
+    .btn-add-main-subject {
+      background: #f1f5f9;
+      border: 1px dashed #94a3b8;
+      border-radius: 12px;
+      padding: 8px;
+      font-size: 0.78rem;
+      color: #475569;
+      cursor: pointer;
+      text-align: center;
+      font-weight: 800;
+      transition: all 0.2s ease;
+    }
+
+    .btn-add-main-subject:hover {
+      background: #e2e8f0;
+      color: var(--text-main);
     }
 
     /* Botões Circulares de Status (V, R, X) na Base de Cada Dia */
@@ -291,12 +352,13 @@
       align-items: center;
       gap: 6px;
       margin-top: auto;
-      padding-top: 6px;
+      padding-top: 10px;
+      border-top: 1px solid #f1f5f9;
     }
 
     .status-label {
-      font-size: 0.68rem;
-      font-weight: 700;
+      font-size: 0.65rem;
+      font-weight: 800;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -309,17 +371,17 @@
     }
 
     .circle-btn {
-      width: 32px;
-      height: 32px;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
       border: 2px solid transparent;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       font-weight: 800;
-      background: #e2e8f0;
+      background: #f1f5f9;
       color: #64748b;
       transition: all 0.2s ease;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
@@ -355,7 +417,7 @@
 
   <div class="app-container">
     
-    <!-- BARRA SUPERIOR COM ABAS (MANTIDAS PRONTAS SEM AÇÃO) -->
+    <!-- BARRA SUPERIOR -->
     <header class="top-navbar">
       <nav class="nav-tabs">
         <button class="nav-tab-item active" title="Planejamento Semanal"><span>🏠</span></button>
@@ -367,7 +429,7 @@
 
       <div class="header-badges">
         <div class="badge-pill badge-fire">
-          <span>🔥</span> <span id="streak-count">25 Dias Limpos</span>
+          <span>🔥</span> <span id="streak-count">25 Dias de Sequência</span>
         </div>
         <div class="badge-pill badge-check">
           <span>✓</span> <span>100% Concluído</span>
@@ -384,172 +446,234 @@
   </div>
 
   <script>
-    const DAYS_PT = [
-      { id: "seg", name: "Segunda-feira" },
-      { id: "ter", name: "Terça-feira" },
-      { id: "qua", name: "Quarta-feira" },
-      { id: "qui", name: "Quinta-feira" },
-      { id: "sex", name: "Sexta-feira" },
-      { id: "sab", name: "Sábado" },
-      { id: "dom", name: "Domingo" }
-    ];
+    const DAYS_OF_WEEK = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"];
 
     // Dados Iniciais da Semana
-    const defaultWeeklyData = {
-      seg: {
-        status: 'v',
-        blocks: [
-          { title: "Faculdade de Física", type: "blue", tasks: [{ text: "Vetores: tratamento geométrico", done: true }, { text: "Vetores: tratamento algébrico", done: false }] },
-          { title: "Concurso PMAL", type: "orange", tasks: [{ text: "Português: Crase e Pontuação", done: false }] }
+    const initialWeekData = [
+      {
+        day: "Segunda-feira",
+        status: "v",
+        subjects: [
+          {
+            title: "Faculdade de Física",
+            subtasks: [
+              { text: "Vetores: tratamento geométrico", done: true },
+              { text: "Vetores: tratamento algébrico", done: false }
+            ]
+          },
+          {
+            title: "Concurso PMAL",
+            subtasks: [
+              { text: "Português: Crase e Pontuação", done: false }
+            ]
+          }
         ]
       },
-      ter: {
-        status: 'none',
-        blocks: [
-          { title: "Faculdade de Física", type: "blue", tasks: [{ text: "Produto escalar e projeção", done: false }, { text: "Fatoração & Apêndice A", done: false }] },
-          { title: "Concurso PMAL", type: "orange", tasks: [{ text: "Informática: Conceitos de Nuvem", done: false }] }
+      {
+        day: "Terça-feira",
+        status: "v",
+        subjects: [
+          {
+            title: "Faculdade de Física",
+            subtasks: [
+              { text: "Produto escalar e projeção", done: false },
+              { text: "Fatoração & Apêndice A", done: false }
+            ]
+          }
         ]
       },
-      qua: {
-        status: 'v',
-        blocks: [
-          { title: "Faculdade de Física", type: "blue", tasks: [{ text: "Estrutura Atômica e Tabela", done: true }, { text: "Funções & Inversas", done: false }] },
-          { title: "Concurso PMAL", type: "orange", tasks: [{ text: "RLM: Regra de Três", done: true }] }
+      {
+        day: "Quarta-feira",
+        status: "v",
+        subjects: [
+          {
+            title: "Faculdade de Física",
+            subtasks: [
+              { text: "Estrutura Atômica e Tabela", done: true },
+              { text: "Funções & Inversas", done: false }
+            ]
+          }
         ]
       },
-      qui: {
-        status: 'v',
-        blocks: [
-          { title: "Faculdade de Física", type: "blue", tasks: [{ text: "Conjuntos e Funções", done: false }] },
-          { title: "Concurso PMAL", type: "orange", tasks: [{ text: "Direito: Direitos Humanos", done: false }] }
+      {
+        day: "Quinta-feira",
+        status: "r",
+        subjects: [
+          {
+            title: "Faculdade de Física",
+            subtasks: [
+              { text: "Conjuntos e Funções", done: false }
+            ]
+          }
         ]
       },
-      sex: {
-        status: 'none',
-        blocks: [
-          { title: "Faculdade de Física", type: "blue", tasks: [{ text: "Matrizes e Determinantes", done: false }, { text: "Limites e Continuidade", done: false }] },
-          { title: "Concurso PMAL", type: "orange", tasks: [{ text: "Português: Ortografia", done: false }] }
+      {
+        day: "Sexta-feira",
+        status: "v",
+        subjects: [
+          {
+            title: "Faculdade de Física",
+            subtasks: [
+              { text: "Limites e Continuidade", done: false }
+            ]
+          }
         ]
       },
-      sab: {
-        status: 'r',
-        blocks: [
-          { title: "Revisão Geral", type: "blue", tasks: [{ text: "Revisar Stewart Apêndice B", done: false }] },
-          { title: "Simulado PMAL", type: "orange", tasks: [{ text: "Resolver 30 questões Qconcursos", done: false }] }
+      {
+        day: "Sábado",
+        status: "x",
+        subjects: [
+          {
+            title: "Revisão Geral",
+            subtasks: [
+              { text: "Resolução de Exercícios Stewart", done: false }
+            ]
+          }
         ]
       },
-      dom: {
-        status: 'none',
-        blocks: [
-          { title: "Descanso / Planejamento", type: "blue", tasks: [{ text: "Organizar cronograma da semana", done: false }] }
+      {
+        day: "Domingo",
+        status: "x",
+        subjects: [
+          {
+            title: "Descanso / Planejamento",
+            subtasks: [
+              { text: "Organização da Próxima Semana", done: false }
+            ]
+          }
         ]
       }
-    };
+    ];
 
-    let weeklyData = JSON.parse(localStorage.getItem('v4_weekly_data')) || defaultWeeklyData;
+    let weekData = JSON.parse(localStorage.getItem('weekly_planner_data')) || initialWeekData;
 
-    function saveWeeklyData() {
-      localStorage.setItem('v4_weekly_data', JSON.stringify(weeklyData));
+    function saveWeekData() {
+      localStorage.setItem('weekly_planner_data', JSON.stringify(weekData));
     }
 
     function renderWeeklyGrid() {
-      const container = document.getElementById('weekly-grid');
-      container.innerHTML = '';
+      const grid = document.getElementById('weekly-grid');
+      grid.innerHTML = '';
 
-      DAYS_PT.forEach(day => {
-        const dayData = weeklyData[day.id] || { status: 'none', blocks: [] };
-
+      weekData.forEach((dayObj, dayIdx) => {
         const card = document.createElement('div');
         card.className = 'day-card';
 
-        // Header do Dia
+        // Cabeçalho do Dia
         let html = `
           <div class="day-header">
-            <h2 class="day-title">${day.name}</h2>
+            <h3 class="day-title">${dayObj.day}</h3>
           </div>
+          <div class="subjects-container" id="subjects-day-${dayIdx}">
         `;
 
-        // Blocos de Assuntos (Física, PMAL, etc.)
-        dayData.blocks.forEach((block, bIdx) => {
-          const dotClass = block.type === 'orange' ? 'dot-orange' : '';
+        // Tópicos Principais
+        dayObj.subjects.forEach((subj, subjIdx) => {
           html += `
             <div class="subject-block">
-              <input type="text" class="subject-title-input" value="${block.title}" onchange="updateBlockTitle('${day.id}', ${bIdx}, this.value)">
-              <div class="task-list">
+              <div class="subject-header">
+                <input type="text" class="subject-title-input" value="${subj.title}" onchange="updateSubjectTitle(${dayIdx}, ${subjIdx}, this.value)" placeholder="Título da Matéria...">
+                <button class="btn-remove-subject" onclick="removeSubject(${dayIdx}, ${subjIdx})" title="Remover Matéria">&times;</button>
+              </div>
+              <div class="subtask-list">
           `;
 
-          block.tasks.forEach((task, tIdx) => {
+          // Subtópicos
+          subj.subtasks.forEach((sub, subIdx) => {
             html += `
-              <div class="task-item ${task.done ? 'completed' : ''}">
-                <span class="dot-indicator ${dotClass}"></span>
-                <input type="text" class="task-text-input" value="${task.text}" onchange="updateTaskText('${day.id}', ${bIdx}, ${tIdx}, this.value)">
-                <input type="checkbox" class="task-checkbox" ${task.done ? 'checked' : ''} onchange="toggleTaskDone('${day.id}', ${bIdx}, ${tIdx})">
+              <div class="subtask-item ${sub.done ? 'completed' : ''}">
+                <input type="checkbox" class="subtask-checkbox" ${sub.done ? 'checked' : ''} onchange="toggleSubtask(${dayIdx}, ${subjIdx}, ${subIdx})">
+                <input type="text" class="subtask-text-input" value="${sub.text}" onchange="updateSubtaskText(${dayIdx}, ${subjIdx}, ${subIdx}, this.value)" placeholder="Descreva o subtópico...">
+                <button class="btn-remove-subtask" onclick="removeSubtask(${dayIdx}, ${subjIdx}, ${subIdx})" title="Remover Subtópico">&times;</button>
               </div>
             `;
           });
 
           html += `
               </div>
-              <button class="btn-add" onclick="addTask('${day.id}', ${bIdx})">+ Adicionar Tarefa</button>
+              ${subj.subtasks.length < 10 ? `<button class="btn-add-subtask" onclick="addSubtask(${dayIdx}, ${subjIdx})">+ Adicionar Subtópico</button>` : ''}
             </div>
           `;
         });
 
-        // Botões Circulares de Status (V, R Laranja, X)
-        const isV = dayData.status === 'v' ? 'active' : '';
-        const isR = dayData.status === 'r' ? 'active' : '';
-        const isX = dayData.status === 'x' ? 'active' : '';
+        html += `</div>`;
 
+        // Botão para adicionar Tópico Principal (máximo 5)
+        if (dayObj.subjects.length < 5) {
+          html += `<button class="btn-add-main-subject" onclick="addSubject(${dayIdx})">+ Adicionar Tópico Principal</button>`;
+        }
+
+        // Seletor Circular de Status do Dia
         html += `
           <div class="status-circles-container">
             <span class="status-label">Status do Dia</span>
             <div class="status-circles">
-              <button class="circle-btn circle-v ${isV}" onclick="setDayStatus('${day.id}', 'v')" title="Produtivo (V)">V</button>
-              <button class="circle-btn circle-r ${isR}" onclick="setDayStatus('${day.id}', 'r')" title="Ruim / Desvio (R)">R</button>
-              <button class="circle-btn circle-x ${isX}" onclick="setDayStatus('${day.id}', 'x')" title="Inativo (X)">X</button>
+              <button class="circle-btn circle-v ${dayObj.status === 'v' ? 'active' : ''}" onclick="setStatus(${dayIdx}, 'v')">V</button>
+              <button class="circle-btn circle-r ${dayObj.status === 'r' ? 'active' : ''}" onclick="setStatus(${dayIdx}, 'r')">R</button>
+              <button class="circle-btn circle-x ${dayObj.status === 'x' ? 'active' : ''}" onclick="setStatus(${dayIdx}, 'x')">X</button>
             </div>
           </div>
         `;
 
         card.innerHTML = html;
-        container.appendChild(card);
+        grid.appendChild(card);
       });
     }
 
-    function updateBlockTitle(dayId, blockIdx, newTitle) {
-      weeklyData[dayId].blocks[blockIdx].title = newTitle;
-      saveWeeklyData();
+    // Funções de Alteração de Dados
+    function updateSubjectTitle(dayIdx, subjIdx, val) {
+      weekData[dayIdx].subjects[subjIdx].title = val;
+      saveWeekData();
     }
 
-    function updateTaskText(dayId, blockIdx, taskIdx, newText) {
-      weeklyData[dayId].blocks[blockIdx].tasks[taskIdx].text = newText;
-      saveWeeklyData();
+    function updateSubtaskText(dayIdx, subjIdx, subIdx, val) {
+      weekData[dayIdx].subjects[subjIdx].subtasks[subIdx].text = val;
+      saveWeekData();
     }
 
-    function toggleTaskDone(dayId, blockIdx, taskIdx) {
-      const current = weeklyData[dayId].blocks[blockIdx].tasks[taskIdx].done;
-      weeklyData[dayId].blocks[blockIdx].tasks[taskIdx].done = !current;
-      saveWeeklyData();
+    function toggleSubtask(dayIdx, subjIdx, subIdx) {
+      weekData[dayIdx].subjects[subjIdx].subtasks[subIdx].done = !weekData[dayIdx].subjects[subjIdx].subtasks[subIdx].done;
+      saveWeekData();
       renderWeeklyGrid();
     }
 
-    function addTask(dayId, blockIdx) {
-      weeklyData[dayId].blocks[blockIdx].tasks.push({ text: "Nova tarefa...", done: false });
-      saveWeeklyData();
-      renderWeeklyGrid();
-    }
-
-    function setDayStatus(dayId, statusType) {
-      if (weeklyData[dayId].status === statusType) {
-        weeklyData[dayId].status = 'none';
-      } else {
-        weeklyData[dayId].status = statusType;
+    function addSubject(dayIdx) {
+      if (weekData[dayIdx].subjects.length < 5) {
+        weekData[dayIdx].subjects.push({
+          title: "Novo Tópico Principal",
+          subtasks: [{ text: "Novo subtópico", done: false }]
+        });
+        saveWeekData();
+        renderWeeklyGrid();
       }
-      saveWeeklyData();
+    }
+
+    function removeSubject(dayIdx, subjIdx) {
+      weekData[dayIdx].subjects.splice(subjIdx, 1);
+      saveWeekData();
       renderWeeklyGrid();
     }
 
-    // Inicialização
+    function addSubtask(dayIdx, subjIdx) {
+      if (weekData[dayIdx].subjects[subjIdx].subtasks.length < 10) {
+        weekData[dayIdx].subjects[subjIdx].subtasks.push({ text: "Novo subtópico", done: false });
+        saveWeekData();
+        renderWeeklyGrid();
+      }
+    }
+
+    function removeSubtask(dayIdx, subjIdx, subIdx) {
+      weekData[dayIdx].subjects[subjIdx].subtasks.splice(subIdx, 1);
+      saveWeekData();
+      renderWeeklyGrid();
+    }
+
+    function setStatus(dayIdx, statusType) {
+      weekData[dayIdx].status = weekData[dayIdx].status === statusType ? '' : statusType;
+      saveWeekData();
+      renderWeeklyGrid();
+    }
+
     renderWeeklyGrid();
   </script>
 </body>
