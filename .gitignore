@@ -1,0 +1,12 @@
+# Esta pasta também contém arquivos pessoais e credenciais locais.
+# Somente a aplicação e o histórico selecionado devem entrar no repositório.
+/*
+!/index.html
+!/README.md
+!/.gitignore
+!/historico/
+historico/*
+!historico/index-anterior.html
+!historico/versoes/
+historico/versoes/*
+!historico/versoes/*.html
