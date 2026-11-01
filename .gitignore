@@ -2,6 +2,8 @@
 # Somente a aplicação e o histórico selecionado devem entrar no repositório.
 /*
 !/index.html
+!/styles.css
+!/app.js
 !/README.md
 !/.gitignore
 !/historico/
