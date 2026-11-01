@@ -6,7 +6,7 @@
   <title>Dashboard de Produtividade & Estudos</title>
   <style>
     /* ==========================================================================
-       1. VARIÁVEIS DE CORES E TEMA (ESTILO DASHBOARD DA IMAGEM 2)
+       1. VARIÁVEIS DE CORES E TEMA (ESTILO DASHBOARD MODERNO)
        ========================================================================== */
     :root {
       --bg-main: #f1f5f9;          /* Fundo geral em tom cinza-azulado leve */
@@ -315,7 +315,7 @@
     </div>
 
     <!-- ==========================================================================
-       ABA 1: CALENDÁRIO DE PRODUTIVIDADE (ESTILO IMAGEM 2)
+       ABA 1: CALENDÁRIO DE PRODUTIVIDADE
        ========================================================================== -->
     <div id="tab-calendario" class="tab-content active">
       <div class="calendar-layout">
@@ -324,11 +324,11 @@
         <div class="card">
           <div class="stats-grid">
             <div class="stat-card highlight">
-              <div class="stat-label">Sequência</div>
+              <div class="stat-label">Sequência (Sem R)</div>
               <div class="stat-value" id="streak-val" style="color: var(--primary);">0 dias</div>
             </div>
             <div class="stat-card highlight">
-              <div class="stat-label">Recorde Histórico</div>
+              <div class="stat-label">Recorde (Produtivo)</div>
               <div class="stat-value" id="record-val" style="color: var(--primary);">0 dias</div>
             </div>
             <div class="stat-card">
@@ -528,7 +528,7 @@
     let uniTasks = JSON.parse(localStorage.getItem('cal_uni_tasks')) || [];
     let savedChecklists = JSON.parse(localStorage.getItem('saved_checklists')) || {};
 
-    // Dados Iniciais do Mês de Outubro
+    // Dados Iniciais da Imagem 2
     const initialImageData = {
       "2026-09-28": { v: true, r: false, x: false },
       "2026-09-29": { v: false, r: true, x: false },
@@ -584,7 +584,7 @@
       const allKeys = Object.keys(appData).sort();
       let currentStreak = 0;
       let maxStreak = 0;
-      let tempStreak = 0;
+      let tempMaxStreak = 0;
 
       if (allKeys.length === 0) return { currentStreak: 0, maxStreak: 0 };
 
@@ -592,24 +592,33 @@
       const maxDate = new Date();
       let checkDate = new Date(minDate);
 
+      let tempCurrentStreak = 0;
+
       while (checkDate <= maxDate) {
         const key = formatDateKey(checkDate);
         const dayData = appData[key];
 
-        // Se o dia tem "R" (Ruim/Desvio), reinicia a contagem
+        // 1. Lógica da Sequência Atual: zera se tiver 'R'
         if (dayData && dayData.r) {
-          tempStreak = 0;
+          tempCurrentStreak = 0;
         } else {
-          // Qualquer outro dia (V, X ou sem marcação) mantém a sequência sem dias ruins
-          tempStreak++;
-          if (tempStreak > maxStreak) {
-            maxStreak = tempStreak;
-          }
+          tempCurrentStreak++;
         }
+
+        // 2. Lógica do Recorde Histórico: só acumula se for 'V' E NÃO for 'R'
+        if (dayData && dayData.v && !dayData.r) {
+          tempMaxStreak++;
+          if (tempMaxStreak > maxStreak) {
+            maxStreak = tempMaxStreak;
+          }
+        } else if (dayData && dayData.r) {
+          tempMaxStreak = 0;
+        }
+
         checkDate.setDate(checkDate.getDate() + 1);
       }
 
-      currentStreak = tempStreak;
+      currentStreak = tempCurrentStreak;
       return { currentStreak, maxStreak };
     }
 
