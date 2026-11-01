@@ -1,0 +1,214 @@
+  <!-- PAINEL ESQUERDO: MÉTRICAS E GRADE DO CALENDÁRIO -->
+  <div class="card">
+    <div class="stats-container">
+      <div class="stat-card streak">
+        <div class="stat-label">Sequência Limpa</div>
+        <div class="stat-value" id="streak-val" style="color: var(--primary);">0 dias</div>
+      </div>
+      <div class="stat-card streak">
+        <div class="stat-label">Recorde Histórico</div>
+        <div class="stat-value" id="record-val" style="color: var(--primary);">24 dias</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Produtivos (V)</div>
+        <div class="stat-value" id="count-v" style="color: var(--color-v);">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Ruim (R)</div>
+        <div class="stat-value" id="count-r" style="color: var(--color-r);">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Inativo (X)</div>
+        <div class="stat-value" id="count-x" style="color: var(--color-x);">0</div>
+      </div>
+    </div>
+
+    <div class="calendar-header">
+      <div class="calendar-title" id="month-year-display">--</div>
+      <div class="nav-btns">
+        <button class="btn" id="prev-btn">&lt;</button>
+        <button class="btn" id="today-btn">Hoje</button>
+        <button class="btn" id="next-btn">&gt;</button>
+      </div>
+    </div>
+
+    <div class="calendar-grid" id="calendar-grid"></div>
+  </div>
+
+  <!-- PAINEL DIREITO: INTERAÇÃO DO DIA SELECIONADO & AVISOS -->
+  <div class="card">
+    <div class="sidebar-section">
+      <div class="panel-title">
+        <span>🎓 Avisos / Tarefas Rápidas</span>
+      </div>
+      <div class="input-group">
+        <input type="text" id="uni-task-input" class="custom-input" placeholder="Nova tarefa...">
+        <button class="btn btn-primary" id="add-uni-task-btn">+</button>
+      </div>
+      <ul class="item-list" id="uni-task-list"></ul>
+    </div>
+
+    <div class="sidebar-section" style="margin-bottom: 0;">
+      <div class="panel-title" id="selected-date-display">Selecione um dia</div>
+      <div style="margin-bottom: 12px;">
+        <div class="stat-label">Status do Dia</div>
+        <div class="toggle-group">
+          <button class="toggle-btn" id="btn-toggle-v">V</button>
+          <button class="toggle-btn" id="btn-toggle-r">R</button>
+          <button class="toggle-btn" id="btn-toggle-x">X</button>
+        </div>
+      </div>
+      <div>
+        <div class="stat-label" style="margin-bottom: 6px;">Compromissos do Dia</div>
+        <div class="input-group">
+          <input type="text" id="event-input" class="custom-input" placeholder="Novo evento...">
+          <button class="btn" id="add-event-btn">+</button>
+        </div>
+        <ul class="item-list" id="event-list"></ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Dia</th>
+        <th>Aquecimento Pré-Aula</th>
+        <th>Bloco Base / Stewart</th>
+        <th>Estudo Passivo: Física</th>
+        <th>Aulas Presenciais</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- SEGUNDA -->
+      <tr>
+        <td class="day-col">Segunda</td>
+        <td>
+          <span class="tag tag-esquente">Winterle</span>
+          <label class="task-item"><input type="checkbox" class="physics-cb" id="seg-esq-1"><span>Vetores: tratamento geométrico</span></label>
+          <label class="task-item"><input type="checkbox" class="physics-cb" id="seg-esq-2"><span>Vetores: tratamento algébrico</span></label>
+        </td>
+        <td>
+          <span class="tag tag-stewart">Stewart</span>
+          <label class="task-item"><input type="checkbox" class="physics-cb" id="seg-stew-1"><span>Apêndices B e C</span></label>
+        </td>
+        <td>
+          <span class="tag tag-fisica">Mannarino</span>
+          <label class="task-item"><input type="checkbox" class="physics-cb" id="seg-fis-1"><span>Física do Zero + Qconcursos</span></label>
+        </td>
+        <td>
+          <span class="tag tag-aula">18:00 – 22:30</span>
+          <label class="task-item"><input type="checkbox" class="physics-cb" id="seg-aula-1"><span>Geometria Analítica</span></label>
+        </td>
+      </tr>
+
+      <!-- TERÇA -->
+      <tr>
+        <td class="day-col">Terça</td>
+        <td>
+          <span class="tag tag-esquente">Winterle</span>
+          <label class="task-item"><input type="checkbox" class="physics-cb" id="ter-esq-1"><span>Produto escalar e projeção</span></label>
+        </td>
+        <td>
+          <span class="tag tag-stewart">Stewart</span>
+          <label class="task-item"><input type="checkbox" class="physics-cb" id="ter-stew-1"><span>Fatoração & Apêndice A</span></label>
+        </td>
+        <td>
+          <span class="tag tag-fisica">Mannarino</span>
+          <label class="task-item"><input type="checkbox" class="physics-cb" id="ter-fis-1"><span>Aulas + Exercícios</span></label>
+        </td>
+        <td>
+          <span class="tag tag-aula">18:00 – 22:30</span>
+          <label class="task-item"><input type="checkbox" class="physics-cb" id="ter-aula-1"><span>Psicologia da Educação</span></label>
+        </td>
+      </tr>
+
+      <!-- QUARTA -->
+      <tr>
+        <td class="day-col">Quarta</td>
+        <td>
+          <span class="tag tag-esquente">Química</span>
+          <label class="task-item"><input type="checkbox" class="physics-cb" id="qua-esq-1"><span>Estrutura Atômica e Tabela</span></label>
+        </td>
+        <td>
+          <span class="tag tag-stewart">Stewart</span>
+          <label class="task-item"><input type="checkbox" class="physics-cb" id="qua-stew-1"><span>Funções & Inversas</span></label>
+        </td>
+        <td>
+          <span class="tag tag-fisica">Mannarino</span>
+          <label class="task-item"><input type="checkbox" class="physics-cb" id="qua-fis-1"><span>Vídeos / Questões</span></label>
+        </td>
+        <td>
+          <span class="tag tag-aula">Presencial</span>
+          <label class="task-item"><input type="checkbox" class="physics-cb" id="qua-aula-1"><span>Diversidade & Química Geral</span></label>
+        </td>
+      </tr>
+
+      <!-- QUINTA -->
+      <tr>
+        <td class="day-col">Quinta</td>
+        <td>
+          <span class="tag tag-esquente">Fundamentos</span>
+          <label class="task-item"><input type="checkbox" class="physics-cb" id="qui-esq-1"><span>Conjuntos e Funções</span></label>
+        </td>
+        <td>
+          <span class="tag tag-stewart">Stewart</span>
+          <label class="task-item"><input type="checkbox" class="physics-cb" id="qui-stew-1"><span>Trigonometria (Apêndice D)</span></label>
+        </td>
+        <td>
+          <span class="tag tag-fisica">Mannarino</span>
+          <label class="task-item"><input type="checkbox" class="physics-cb" id="qui-fis-1"><span>Revisão Rápida</span></label>
+        </td>
+        <td>
+          <span class="tag tag-aula">Presencial</span>
+          <label class="task-item"><input type="checkbox" class="physics-cb" id="qui-aula-1"><span>Intro ao Lab & Proj. Integradores</span></label>
+        </td>
+      </tr>
+
+      <!-- SEXTA -->
+      <tr>
+        <td class="day-col">Sexta</td>
+        <td>
+          <span class="tag tag-esquente">Fundamentos</span>
+          <label class="task-item"><input type="checkbox" class="physics-cb" id="sex-esq-1"><span>Matrizes e Determinantes</span></label>
+        </td>
+        <td>
+          <span class="tag tag-stewart">Stewart</span>
+          <label class="task-item"><input type="checkbox" class="physics-cb" id="sex-stew-1"><span>Limites e Continuidade</span></label>
+        </td>
+        <td>
+          <span class="tag tag-fisica">Mannarino</span>
+          <label class="task-item"><input type="checkbox" class="physics-cb" id="sex-fis-1"><span>Resolução de Exercícios</span></label>
+        </td>
+        <td>
+          <span class="tag tag-aula">Presencial</span>
+          <label class="task-item"><input type="checkbox" class="physics-cb" id="sex-aula-1"><span>Fundamentos da Matemática</span></label>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+  <div class="day-card">
+    <div class="day-title">Dia 1 - Bloco Inicial</div>
+    <div class="subject-title">Língua Portuguesa</div>
+    <label class="task-item"><input type="checkbox" class="pmal-cb" id="pmal-d1-1"><span>Compreensão e Interpretação de Textos</span></label>
+    <label class="task-item"><input type="checkbox" class="pmal-cb" id="pmal-d1-2"><span>Domínio da Ortografia Oficial</span></label>
+    <div class="subject-title">Direito & Legislação</div>
+    <label class="task-item"><input type="checkbox" class="pmal-cb" id="pmal-d1-3"><span>CTB e Direitos Humanos (Leitura Rápida)</span></label>
+  </div>
+
+  <div class="day-card">
+    <div class="day-title">Dia 2 - Exatas & Informática</div>
+    <div class="subject-title">Matemática / RLM</div>
+    <label class="task-item"><input type="checkbox" class="pmal-cb" id="pmal-d2-1"><span>Razão, Proporção e Regra de Três</span></label>
+    <label class="task-item"><input type="checkbox" class="pmal-cb" id="pmal-d2-2"><span>Porcentagem e Juros Simples</span></label>
+    <div class="subject-title">Informática</div>
+    <label class="task-item"><input type="checkbox" class="pmal-cb" id="pmal-d2-3"><span>Windows, Redes e Conceitos de Nuvem</span></label>
+  </div>
+</div>
