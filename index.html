@@ -16,7 +16,7 @@
         <button class="nav-tab-item active" type="button" data-view="weekly" aria-label="Planejamento Semanal" aria-pressed="true" title="Planejamento Semanal"><span>🏠</span></button>
         <button class="nav-tab-item" title="Calendário Mensal"><span>📅</span></button>
         <button class="nav-tab-item" type="button" data-view="macro" aria-label="Acompanhamento Mensal" aria-pressed="false" title="Acompanhamento Mensal"><span>📊</span></button>
-        <button class="nav-tab-item" title="Eventos e Prazos"><span>📆</span></button>
+        <button class="nav-tab-item" type="button" data-view="events" aria-label="Eventos e Prazos" aria-pressed="false" title="Eventos e Prazos"><span>📆</span></button>
         <button class="nav-tab-item" title="Perfil"><span>👤</span></button>
       </nav>
 
@@ -106,6 +106,10 @@
           </div>
         </div>
         <div class="calendar-view-target" id="calendar-view-target"></div>
+        <aside class="day-preview" id="day-preview" aria-label="Prévia das atividades do dia" hidden>
+          <button class="day-preview-close" id="close-day-preview" type="button" aria-label="Fechar prévia">×</button>
+          <div id="day-preview-content"></div>
+        </aside>
         <section class="day-details" id="day-details" aria-live="polite" aria-labelledby="day-details-title"></section>
         <div class="month-legend" aria-label="Legenda de status">
           <span class="month-legend-item"><span class="month-status-dot status-v">V</span> Produtivo</span>
@@ -113,9 +117,75 @@
           <span class="month-legend-item"><span class="month-status-dot status-x">X</span> Dia inativo</span>
           <span class="month-legend-item"><span class="month-status-dot">·</span> Sem registro</span>
           <span class="month-legend-item"><span class="activities-legend-dot" aria-hidden="true"></span> Há atividades agendadas</span>
+          <span class="month-legend-item"><span class="planning-items-legend-dot" aria-hidden="true"></span> Tarefas ou compromissos</span>
         </div>
       </section>
     </section>
+
+    <section class="view-panel events-section" id="events-view" aria-label="Eventos e Prazos" hidden>
+      <div class="events-toolbar">
+        <div>
+          <h2>Calendário de Eventos e Prazos</h2>
+          <p>Organize provas, entregas acadêmicas e compromissos ao longo do ano.</p>
+        </div>
+        <div class="events-actions">
+          <div class="calendar-controls" aria-label="Selecionar ano">
+            <button class="calendar-control-button" id="previous-events-year" type="button" aria-label="Ano anterior" title="Ano anterior">‹</button>
+            <span class="calendar-period-label" id="events-year-label"></span>
+            <button class="calendar-control-button" id="next-events-year" type="button" aria-label="Próximo ano" title="Próximo ano">›</button>
+            <button class="calendar-control-button calendar-control-today" id="current-events-year" type="button">Este ano</button>
+          </div>
+          <button class="view-action-button" id="add-calendar-event" type="button">+ Novo evento</button>
+        </div>
+      </div>
+      <div class="events-legend" aria-label="Categorias de eventos">
+        <span><i class="event-category-dot event-category-exam"></i> Prova</span>
+        <span><i class="event-category-dot event-category-deadline"></i> Entrega acadêmica</span>
+        <span><i class="event-category-dot event-category-appointment"></i> Compromisso</span>
+        <span><i class="event-category-dot event-category-other"></i> Outro</span>
+      </div>
+      <div class="events-calendar-scroll" id="events-calendar-scroll" tabindex="0" aria-label="Calendário anual; role horizontalmente para ver os dias">
+        <div class="events-calendar" id="events-calendar"></div>
+      </div>
+    </section>
+
+    <dialog class="event-dialog" id="event-dialog" aria-labelledby="event-dialog-title">
+      <form id="event-form">
+        <div class="event-dialog-header">
+          <h2 id="event-dialog-title">Novo evento</h2>
+          <button class="event-dialog-close" type="button" id="close-event-dialog" aria-label="Fechar">×</button>
+        </div>
+        <input id="event-id" type="hidden">
+        <input id="event-kind" type="hidden">
+        <label class="event-form-field" for="event-title">Título
+          <input id="event-title" name="title" type="text" maxlength="120" required>
+        </label>
+        <div class="event-form-row">
+          <label class="event-form-field" for="event-date">Data
+            <input id="event-date" name="date" type="date" required>
+          </label>
+          <label class="event-form-field" for="event-time">Horário (opcional)
+            <input id="event-time" name="time" type="time">
+          </label>
+        </div>
+        <label class="event-form-field" for="event-category">Categoria
+          <select id="event-category" name="category">
+            <option value="exam">Prova</option>
+            <option value="deadline">Entrega acadêmica</option>
+            <option value="appointment">Compromisso</option>
+            <option value="other">Outro</option>
+          </select>
+        </label>
+        <label class="event-form-field" for="event-notes">Observações (opcional)
+          <textarea id="event-notes" name="notes" rows="3" maxlength="500"></textarea>
+        </label>
+        <div class="event-dialog-actions">
+          <button class="weekly-range-clear-button" id="delete-calendar-event" type="button" hidden>Excluir</button>
+          <button class="calendar-control-button" type="button" id="cancel-event-dialog">Cancelar</button>
+          <button class="view-action-button" type="submit">Salvar evento</button>
+        </div>
+      </form>
+    </dialog>
 
   </div>
 

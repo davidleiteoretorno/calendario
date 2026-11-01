@@ -98,6 +98,12 @@
     ];
 
     const VALID_STATUSES = ["v", "r", "x"];
+    const EVENT_CATEGORIES = {
+      exam: "Prova",
+      deadline: "Entrega acadêmica",
+      appointment: "Compromisso",
+      other: "Outro"
+    };
 
     function toDateKey(date) {
       const year = date.getFullYear();
@@ -130,12 +136,14 @@
     let monthlyDateWasSelected = false;
     let selectedMonth = new Date(today.getFullYear(), today.getMonth(), 1, 12);
     let selectedYear = today.getFullYear();
+    let eventsCalendarYear = today.getFullYear();
     let macroViewMode = "month";
     let selectedDateKey = toDateKey(today);
     let periodStart = new Date(today.getFullYear(), today.getMonth(), 1, 12);
     let periodEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0, 12);
     let legacyWeekData = JSON.parse(localStorage.getItem('weekly_planner_data')) || initialWeekData;
     let productivityHistory = JSON.parse(localStorage.getItem('weekly_planner_history')) || {};
+    let calendarEvents = JSON.parse(localStorage.getItem('calendar_events')) || [];
     const previousVersionHistory = {
       "2026-09-28": "v",
       "2026-09-29": "r",
@@ -354,6 +362,35 @@
               day: "2-digit",
               month: "2-digit"
             })}</span>`;
+        const dayItems = calendarEvents
+          .filter(item => item.date === dayDateKey
+            && (item.kind === "task" || item.kind === "appointment"))
+          .sort((a, b) => (a.time || "").localeCompare(b.time || "") || a.title.localeCompare(b.title));
+        const dayItemsHtml = dayItems.length
+          ? `<section class="day-planning-items" aria-label="Tarefas e compromissos">
+              <h4 class="day-planning-title">Tarefas e compromissos</h4>
+              ${dayItems.map(item => item.kind === "task"
+                ? `<div class="day-planning-item day-planning-task${item.done ? " is-completed" : ""}">
+                    <label class="day-planning-task-label">
+                      <input type="checkbox" data-toggle-planning-task="${escapeHtml(item.id)}" ${item.done ? "checked" : ""}>
+                      <span>${escapeHtml(item.title)}</span>
+                    </label>
+                    <div class="day-planning-item-actions">
+                      <button class="day-planning-item-action" type="button" data-edit-planning-item="${escapeHtml(item.id)}" aria-label="Editar tarefa ${escapeHtml(item.title)}" title="Editar">✎</button>
+                      <button class="day-planning-item-action" type="button" data-delete-planning-item="${escapeHtml(item.id)}" aria-label="Excluir tarefa ${escapeHtml(item.title)}" title="Excluir">×</button>
+                    </div>
+                  </div>`
+                : `<div class="day-planning-item day-planning-appointment">
+                    <span class="day-planning-item-time">${item.time ? `${escapeHtml(item.time)} · ` : ""}</span>
+                    <span class="day-planning-item-name">${escapeHtml(item.title)}</span>
+                    <div class="day-planning-item-actions">
+                      <button class="day-planning-item-action" type="button" data-edit-planning-item="${escapeHtml(item.id)}" aria-label="Editar compromisso ${escapeHtml(item.title)}" title="Editar">✎</button>
+                      <button class="day-planning-item-action" type="button" data-delete-planning-item="${escapeHtml(item.id)}" aria-label="Excluir compromisso ${escapeHtml(item.title)}" title="Excluir">×</button>
+                    </div>
+                  </div>`
+              ).join("")}
+            </section>`
+          : "";
 
         // Cabeçalho do Dia
         let html = `
@@ -399,6 +436,14 @@
         if (dayObj.subjects.length < 5) {
           html += `<button class="btn-add-main-subject" onclick="addSubject(${dayIdx})">+ Adicionar Tópico Principal</button>`;
         }
+
+        html += `
+          ${dayItemsHtml}
+          <div class="day-planning-add-actions">
+            <button class="btn-add-planning-item" type="button" data-add-planning-item="task" data-planning-date="${dayDateKey}">+ Adicionar tarefa</button>
+            <button class="btn-add-planning-item" type="button" data-add-planning-item="appointment" data-planning-date="${dayDateKey}">+ Adicionar compromisso</button>
+          </div>
+        `;
 
         // Seletor Circular de Status do Dia
         html += `
@@ -479,6 +524,100 @@
       })[character]);
     }
 
+    function renderEventsCalendar() {
+      document.getElementById('events-year-label').textContent = String(eventsCalendarYear);
+      document.getElementById('events-calendar').innerHTML = Array.from({ length: 12 }, (_, monthIndex) => {
+        const monthStart = new Date(eventsCalendarYear, monthIndex, 1, 12);
+        const monthKey = `${eventsCalendarYear}-${String(monthIndex + 1).padStart(2, "0")}`;
+        const daysInMonth = new Date(eventsCalendarYear, monthIndex + 1, 0).getDate();
+        const monthEvents = calendarEvents.filter(item => item.date.startsWith(monthKey));
+        const days = Array.from({ length: 31 }, (_, dayIndex) => {
+          const day = dayIndex + 1;
+          if (day > daysInMonth) {
+            return `<div class="events-day events-day-empty" aria-hidden="true"></div>`;
+          }
+
+          const date = new Date(eventsCalendarYear, monthIndex, day, 12);
+          const dateKey = toDateKey(date);
+          const isToday = dateKey === toDateKey(today);
+          const dayEvents = monthEvents
+            .filter(item => item.date === dateKey)
+            .sort((a, b) => (a.time || "").localeCompare(b.time || "") || a.title.localeCompare(b.title));
+          const weekday = date.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "");
+          const eventCards = dayEvents.map(item => {
+            const category = Object.prototype.hasOwnProperty.call(EVENT_CATEGORIES, item.category)
+              ? item.category
+              : "other";
+            const kindLabel = item.kind === "task"
+              ? (item.done ? "Tarefa concluída" : "Tarefa")
+              : item.kind === "appointment"
+                ? "Compromisso"
+                : EVENT_CATEGORIES[category];
+            return `
+              <button class="event-card event-category-${category}${item.done ? " is-completed" : ""}" type="button" data-event-id="${escapeHtml(item.id)}" title="${escapeHtml(item.notes || item.title)}">
+                ${item.time ? `<time>${escapeHtml(item.time)}</time>` : ""}
+                <small class="event-card-kind">${kindLabel}</small>
+                <span>${escapeHtml(item.title)}</span>
+              </button>
+            `;
+          }).join("");
+
+          return `
+            <div class="events-day${isToday ? " is-today" : ""}" data-event-date="${dateKey}">
+              <button class="events-day-add" type="button" aria-label="Adicionar evento em ${date.toLocaleDateString("pt-BR")}">
+                <span class="events-day-weekday">${weekday}</span>
+                <span class="events-day-number">${day}</span>
+                <span class="events-day-add-icon" aria-hidden="true">+</span>
+              </button>
+              <div class="events-day-items">${eventCards}</div>
+            </div>
+          `;
+        }).join("");
+
+        return `
+          <section class="events-month-row" aria-label="${monthStart.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}">
+            <h3 class="events-month-name">${monthStart.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "")}</h3>
+            <div class="events-month-days">${days}</div>
+          </section>
+        `;
+      }).join("");
+    }
+
+    function openEventDialog(dateKey = toDateKey(today), event = null) {
+      openPlanningItemDialog(dateKey, "event", event);
+    }
+
+    function openPlanningItemDialog(dateKey = toDateKey(today), kind = "task", event = null) {
+      const form = document.getElementById('event-form');
+      form.reset();
+      document.getElementById('event-id').value = event ? event.id : "";
+      document.getElementById('event-kind').value = event ? (event.kind || "event") : kind;
+      document.getElementById('event-title').value = event ? event.title : "";
+      document.getElementById('event-date').value = event ? event.date : dateKey;
+      document.getElementById('event-time').value = event ? event.time || "" : "";
+      document.getElementById('event-category').value = event
+        ? event.category
+        : kind === "task"
+          ? "deadline"
+          : kind === "appointment"
+            ? "appointment"
+            : "exam";
+      document.getElementById('event-notes').value = event ? event.notes || "" : "";
+      document.getElementById('event-dialog-title').textContent = event
+        ? `Editar ${event.kind === "task" ? "tarefa" : event.kind === "appointment" ? "compromisso" : "evento"}`
+        : `Novo ${kind === "task" ? "tarefa" : kind === "appointment" ? "compromisso" : "evento"}`;
+      document.getElementById('delete-calendar-event').hidden = !event;
+      document.getElementById('event-dialog').showModal();
+      document.getElementById('event-title').focus();
+    }
+
+    function saveCalendarEvents() {
+      localStorage.setItem('calendar_events', JSON.stringify(calendarEvents));
+      renderEventsCalendar();
+      renderWeeklyGrid();
+      renderMacro();
+    }
+
     function getVisibleDateRange() {
       if (macroViewMode === "year") {
         return [
@@ -525,8 +664,24 @@
         const futureClass = dateKey > toDateKey(today) ? " is-future" : "";
         const weekSchedule = weeklySchedules[toDateKey(getWeekStart(date))] || [];
         const dayPlan = weekSchedule.find(day => day.day === DAYS_OF_WEEK[date.getDay()]);
-        const hasActivities = Boolean(dayPlan && dayPlan.subjects.length > 0);
+        const hasPlannedActivities = Boolean(dayPlan && dayPlan.subjects.length > 0);
+        const dateEvents = calendarEvents.filter(item => item.date === dateKey);
+        const hasPlanningItems = dateEvents.some(item => item.kind === "task" || item.kind === "appointment");
+        const hasActivities = hasPlannedActivities || dateEvents.length > 0;
         const activitiesClass = hasActivities ? " has-activities" : "";
+        const planningItemsClass = hasPlanningItems ? " has-planning-items" : "";
+        const activityDescription = [
+          hasPlannedActivities ? "Há estudos planejados." : "",
+          dateEvents.filter(item => item.kind === "task").length
+            ? `${dateEvents.filter(item => item.kind === "task").length} tarefa(s).`
+            : "",
+          dateEvents.filter(item => item.kind === "appointment").length
+            ? `${dateEvents.filter(item => item.kind === "appointment").length} compromisso(s).`
+            : "",
+          dateEvents.some(item => item.kind !== "task" && item.kind !== "appointment")
+            ? "Há eventos agendados."
+            : ""
+        ].filter(Boolean).join(" ");
         const dateLabel = date.toLocaleDateString("pt-BR", {
           weekday: "long",
           day: "numeric",
@@ -535,7 +690,7 @@
         });
 
         return `
-          <button class="calendar-day${todayClass}${selectedClass}${futureClass}${activitiesClass}" type="button" data-calendar-date="${dateKey}" title="${dateLabel}${hasActivities ? ": Com atividades planejadas" : ""}. Status: ${statusLabel}" aria-label="Ver atividades de ${dateLabel}.${hasActivities ? " Há atividades planejadas." : " Sem atividades planejadas."} Status: ${statusLabel}" aria-pressed="${dateKey === selectedDateKey}">
+          <button class="calendar-day${todayClass}${selectedClass}${futureClass}${activitiesClass}${planningItemsClass}" type="button" data-calendar-date="${dateKey}" title="${dateLabel}${hasActivities ? `: ${activityDescription}` : ""} Status: ${statusLabel}" aria-label="Ver atividades de ${dateLabel}.${hasActivities ? ` ${activityDescription}` : " Sem atividades planejadas."} Status: ${statusLabel}" aria-pressed="${dateKey === selectedDateKey}">
             <span class="calendar-date">${index + 1}</span>
             ${dateKey === toDateKey(today) ? '<span class="calendar-today-label">Hoje</span>' : ''}
             <span class="month-status-dot${status ? ` status-${status}` : ""}" aria-hidden="true">${status ? status.toUpperCase() : "·"}</span>
@@ -568,7 +723,11 @@
         x: "X · Dia inativo"
       }[status] || "Sem status registrado";
       const statusClass = VALID_STATUSES.includes(status) ? ` status-${status}` : "";
+      const dateItems = calendarEvents
+        .filter(item => item.date === selectedDateKey)
+        .sort((a, b) => (a.time || "").localeCompare(b.time || "") || a.title.localeCompare(b.title));
       let subjectsHtml = `<p class="day-details-empty">Não há atividades planejadas para este dia da semana.</p>`;
+      let dateItemsHtml = `<p class="day-details-empty">Não há tarefas, compromissos ou eventos nesta data.</p>`;
 
       if (dayPlan && dayPlan.subjects.length) {
         subjectsHtml = `<div class="planned-subjects">${dayPlan.subjects.map(subject => `
@@ -583,19 +742,123 @@
         `).join("")}</div>`;
       }
 
+      if (dateItems.length) {
+        dateItemsHtml = `<ul class="day-details-calendar-items">${dateItems.map(item => `
+          <li class="${item.done ? "is-completed" : ""}">
+            <span class="day-details-item-kind">${item.kind === "task" ? "Tarefa" : item.kind === "appointment" ? "Compromisso" : EVENT_CATEGORIES[item.category] || "Evento"}</span>
+            ${item.time ? `<time>${escapeHtml(item.time)}</time>` : ""}
+            <span class="day-details-item-name">${escapeHtml(item.title)}</span>
+            ${item.done ? '<span class="day-details-item-completed">Concluída</span>' : ""}
+          </li>
+        `).join("")}</ul>`;
+      }
+
       document.getElementById('day-details').innerHTML = `
         <div class="day-details-header">
           <h3 id="day-details-title">Atividades de ${escapeHtml(dateLabel)}</h3>
           <span class="day-details-status${statusClass}">${statusLabel}</span>
         </div>
+        <h4 class="day-details-section-title">Cronograma de estudos</h4>
         ${subjectsHtml}
+        <h4 class="day-details-section-title">Tarefas, compromissos e eventos</h4>
+        ${dateItemsHtml}
         <div class="day-details-actions">
           <button class="view-action-button" type="button" id="edit-selected-day">Editar planejamento desta semana →</button>
         </div>
       `;
     }
 
+    function renderDayPreview(dateKey) {
+      const date = fromDateKey(dateKey);
+      const dateLabel = date.toLocaleDateString("pt-BR", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      });
+      const dayIndex = date.getDay();
+      const schedule = weeklySchedules[toDateKey(getWeekStart(date))] || [];
+      const dayPlan = schedule.find(day => day.day === DAYS_OF_WEEK[dayIndex]);
+      const status = productivityHistory[dateKey];
+      const statusLabel = {
+        v: "V · Produtivo",
+        r: "R · Dia ruim",
+        x: "X · Dia inativo"
+      }[status] || "Sem registro";
+      const statusClass = VALID_STATUSES.includes(status) ? ` status-${status}` : "";
+      const dateItems = calendarEvents
+        .filter(item => item.date === dateKey)
+        .sort((a, b) => (a.time || "").localeCompare(b.time || "") || a.title.localeCompare(b.title));
+      const subjectsHtml = dayPlan && dayPlan.subjects.length
+        ? `<div class="day-preview-subjects">${dayPlan.subjects.map(subject => `
+            <article>
+              <strong>${escapeHtml(subject.title || "Tópico sem título")}</strong>
+              ${subject.subtasks.length
+                ? `<ul>${subject.subtasks.map(subtask => `
+                    <li class="${subtask.done ? "planned-subtask-done" : ""}">${escapeHtml(subtask.text || "Subtópico sem descrição")}</li>
+                  `).join("")}</ul>`
+                : ""}
+            </article>
+          `).join("")}</div>`
+        : `<p class="day-details-empty">Sem estudos planejados.</p>`;
+      const itemsHtml = dateItems.length
+        ? `<ul class="day-preview-items">${dateItems.map(item => `
+            <li class="${item.done ? "is-completed" : ""}">
+              <span class="day-details-item-kind">${item.kind === "task" ? "Tarefa" : item.kind === "appointment" ? "Compromisso" : EVENT_CATEGORIES[item.category] || "Evento"}</span>
+              ${item.time ? `<time>${escapeHtml(item.time)}</time>` : ""}
+              <span class="day-details-item-name">${escapeHtml(item.title)}</span>
+              ${item.done ? '<span class="day-details-item-completed">Concluída</span>' : ""}
+            </li>
+          `).join("")}</ul>`
+        : `<p class="day-details-empty">Sem tarefas, compromissos ou eventos.</p>`;
+
+      return `
+        <div class="day-preview-header">
+          <h3>Atividades de ${escapeHtml(dateLabel)}</h3>
+          <span class="day-details-status${statusClass}">${statusLabel}</span>
+        </div>
+        <h4 class="day-details-section-title">Cronograma de estudos</h4>
+        ${subjectsHtml}
+        <h4 class="day-details-section-title">Tarefas, compromissos e eventos</h4>
+        ${itemsHtml}
+      `;
+    }
+
+    const dayPreview = document.getElementById('day-preview');
+    let dayPreviewTimer = null;
+    let touchPreviewPointerId = null;
+
+    function hideDayPreview() {
+      window.clearTimeout(dayPreviewTimer);
+      dayPreview.hidden = true;
+      dayPreview.removeAttribute('style');
+    }
+
+    function showDayPreview(dateKey, anchor) {
+      window.clearTimeout(dayPreviewTimer);
+      document.getElementById('day-preview-content').innerHTML = renderDayPreview(dateKey);
+      dayPreview.hidden = false;
+      const anchorRect = anchor.getBoundingClientRect();
+      const previewRect = dayPreview.getBoundingClientRect();
+      const margin = 12;
+      const left = Math.max(margin, Math.min(
+        anchorRect.left + anchorRect.width / 2 - previewRect.width / 2,
+        window.innerWidth - previewRect.width - margin
+      ));
+      const top = anchorRect.bottom + previewRect.height + margin <= window.innerHeight
+        ? anchorRect.bottom + 8
+        : Math.max(margin, anchorRect.top - previewRect.height - 8);
+      dayPreview.style.left = `${left}px`;
+      dayPreview.style.top = `${top}px`;
+    }
+
+    function scheduleDayPreview(dateKey, anchor, delay = 220) {
+      window.clearTimeout(dayPreviewTimer);
+      dayPreviewTimer = window.setTimeout(() => showDayPreview(dateKey, anchor), delay);
+    }
+
     function renderMacro() {
+      hideDayPreview();
       const stats = getProductivityStats();
       document.getElementById('streak-count').textContent = `${formatDayCount(stats.currentStreak)} de sequência atual`;
 
@@ -691,12 +954,49 @@
     }
 
     let lastCalendarClick = null;
-    document.getElementById('calendar-view-target').addEventListener('click', event => {
+    const calendarViewTarget = document.getElementById('calendar-view-target');
+    calendarViewTarget.addEventListener('pointerover', event => {
+      if (event.pointerType === "touch") {
+        return;
+      }
+      const dayButton = event.target.closest('[data-calendar-date]');
+      if (dayButton && !dayButton.contains(event.relatedTarget)) {
+        scheduleDayPreview(dayButton.dataset.calendarDate, dayButton);
+      }
+    });
+    calendarViewTarget.addEventListener('pointerout', event => {
+      const dayButton = event.target.closest('[data-calendar-date]');
+      if (dayButton && !dayButton.contains(event.relatedTarget) && !dayPreview.contains(event.relatedTarget)) {
+        window.clearTimeout(dayPreviewTimer);
+        dayPreviewTimer = window.setTimeout(hideDayPreview, 180);
+      }
+    });
+    calendarViewTarget.addEventListener('focusin', event => {
+      const dayButton = event.target.closest('[data-calendar-date]');
+      if (dayButton) {
+        scheduleDayPreview(dayButton.dataset.calendarDate, dayButton, 0);
+      }
+    });
+    calendarViewTarget.addEventListener('focusout', event => {
+      const dayButton = event.target.closest('[data-calendar-date]');
+      if (dayButton && !dayButton.contains(event.relatedTarget) && !dayPreview.contains(event.relatedTarget)) {
+        window.clearTimeout(dayPreviewTimer);
+        dayPreviewTimer = window.setTimeout(hideDayPreview, 180);
+      }
+    });
+    calendarViewTarget.addEventListener('pointerdown', event => {
+      touchPreviewPointerId = event.pointerType === "touch"
+        ? event.pointerId
+        : null;
+    });
+    calendarViewTarget.addEventListener('click', event => {
       const dayButton = event.target.closest('[data-calendar-date]');
       if (!dayButton) {
         return;
       }
       const dateKey = dayButton.dataset.calendarDate;
+      const shouldShowTouchPreview = touchPreviewPointerId !== null;
+      touchPreviewPointerId = null;
       const clickTime = Date.now();
       if (lastCalendarClick
         && lastCalendarClick.dateKey === dateKey
@@ -711,6 +1011,31 @@
       monthlyDateWasSelected = true;
       selectedDateKey = dateKey;
       renderMacro();
+      if (shouldShowTouchPreview) {
+        const selectedDayButton = calendarViewTarget.querySelector(`[data-calendar-date="${dateKey}"]`);
+        if (selectedDayButton) {
+          showDayPreview(dateKey, selectedDayButton);
+        }
+      }
+    });
+    dayPreview.addEventListener('pointerenter', () => {
+      window.clearTimeout(dayPreviewTimer);
+    });
+    dayPreview.addEventListener('pointerleave', event => {
+      if (!calendarViewTarget.contains(event.relatedTarget)) {
+        dayPreviewTimer = window.setTimeout(hideDayPreview, 180);
+      }
+    });
+    dayPreview.addEventListener('focusout', event => {
+      if (!dayPreview.contains(event.relatedTarget) && !calendarViewTarget.contains(event.relatedTarget)) {
+        dayPreviewTimer = window.setTimeout(hideDayPreview, 180);
+      }
+    });
+    document.getElementById('close-day-preview').addEventListener('click', hideDayPreview);
+    document.addEventListener('pointerdown', event => {
+      if (!dayPreview.contains(event.target) && !calendarViewTarget.contains(event.target)) {
+        hideDayPreview();
+      }
     });
 
     document.querySelectorAll('[data-macro-mode]').forEach(button => {
@@ -765,6 +1090,215 @@
       selectedYear = today.getFullYear();
       selectedDateKey = toDateKey(today);
       renderMacro();
+    });
+
+    document.getElementById('previous-events-year').addEventListener('click', () => {
+      eventsCalendarYear -= 1;
+      renderEventsCalendar();
+    });
+
+    document.getElementById('next-events-year').addEventListener('click', () => {
+      eventsCalendarYear += 1;
+      renderEventsCalendar();
+    });
+
+    document.getElementById('current-events-year').addEventListener('click', () => {
+      eventsCalendarYear = today.getFullYear();
+      renderEventsCalendar();
+    });
+
+    document.getElementById('add-calendar-event').addEventListener('click', () => {
+      openEventDialog();
+    });
+
+    document.getElementById('events-calendar').addEventListener('click', event => {
+      if (suppressNextEventsCalendarClick) {
+        suppressNextEventsCalendarClick = false;
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+
+      const eventButton = event.target.closest('[data-event-id]');
+      if (eventButton) {
+        const calendarEvent = calendarEvents.find(item => item.id === eventButton.dataset.eventId);
+        if (calendarEvent) {
+          openEventDialog(calendarEvent.date, calendarEvent);
+        }
+        return;
+      }
+
+      const dateButton = event.target.closest('[data-event-date]');
+      if (dateButton) {
+        openEventDialog(dateButton.dataset.eventDate);
+      }
+    });
+
+    document.getElementById('weekly-grid').addEventListener('click', event => {
+      const addButton = event.target.closest('[data-add-planning-item]');
+      if (addButton) {
+        openPlanningItemDialog(addButton.dataset.planningDate, addButton.dataset.addPlanningItem);
+        return;
+      }
+
+      const editButton = event.target.closest('[data-edit-planning-item]');
+      if (editButton) {
+        const planningItem = calendarEvents.find(item => item.id === editButton.dataset.editPlanningItem);
+        if (planningItem) {
+          openPlanningItemDialog(planningItem.date, planningItem.kind, planningItem);
+        }
+        return;
+      }
+
+      const deleteButton = event.target.closest('[data-delete-planning-item]');
+      if (deleteButton) {
+        const planningItem = calendarEvents.find(item => item.id === deleteButton.dataset.deletePlanningItem);
+        if (!planningItem || !window.confirm(`Excluir "${planningItem.title}"?`)) {
+          return;
+        }
+        calendarEvents = calendarEvents.filter(item => item.id !== planningItem.id);
+        saveCalendarEvents();
+      }
+    });
+
+    document.getElementById('weekly-grid').addEventListener('change', event => {
+      const checkbox = event.target.closest('[data-toggle-planning-task]');
+      if (!checkbox) {
+        return;
+      }
+
+      const planningItem = calendarEvents.find(item => item.id === checkbox.dataset.togglePlanningTask);
+      if (!planningItem || planningItem.kind !== "task") {
+        return;
+      }
+      planningItem.done = checkbox.checked;
+      saveCalendarEvents();
+    });
+
+    const eventsCalendarScroll = document.getElementById('events-calendar-scroll');
+    let activeEventsCalendarDrag = null;
+    let suppressNextEventsCalendarClick = false;
+
+    function startEventsCalendarDrag(clientX, target) {
+      if (target.closest('dialog')) {
+        return;
+      }
+
+      activeEventsCalendarDrag = {
+        startX: clientX,
+        startScrollLeft: eventsCalendarScroll.scrollLeft,
+        moved: false
+      };
+    }
+
+    function moveEventsCalendarDrag(clientX, event) {
+      if (!activeEventsCalendarDrag) {
+        return;
+      }
+
+      const distance = clientX - activeEventsCalendarDrag.startX;
+      if (!activeEventsCalendarDrag.moved && Math.abs(distance) < 6) {
+        return;
+      }
+
+      activeEventsCalendarDrag.moved = true;
+      eventsCalendarScroll.classList.add('is-dragging');
+      eventsCalendarScroll.scrollLeft = activeEventsCalendarDrag.startScrollLeft - distance;
+      event.preventDefault();
+    }
+
+    function finishEventsCalendarDrag() {
+      if (!activeEventsCalendarDrag) {
+        return;
+      }
+
+      suppressNextEventsCalendarClick = activeEventsCalendarDrag.moved;
+      activeEventsCalendarDrag = null;
+      eventsCalendarScroll.classList.remove('is-dragging');
+      if (suppressNextEventsCalendarClick) {
+        window.setTimeout(() => {
+          suppressNextEventsCalendarClick = false;
+        }, 0);
+      }
+    }
+
+    eventsCalendarScroll.addEventListener('mousedown', event => {
+      if (event.button === 0) {
+        startEventsCalendarDrag(event.clientX, event.target);
+      }
+    });
+    window.addEventListener('mousemove', event => {
+      moveEventsCalendarDrag(event.clientX, event);
+    });
+    window.addEventListener('mouseup', finishEventsCalendarDrag);
+
+    eventsCalendarScroll.addEventListener('touchstart', event => {
+      if (event.touches.length === 1) {
+        startEventsCalendarDrag(event.touches[0].clientX, event.target);
+      }
+    }, { passive: true });
+    eventsCalendarScroll.addEventListener('touchmove', event => {
+      if (event.touches.length === 1) {
+        moveEventsCalendarDrag(event.touches[0].clientX, event);
+      }
+    }, { passive: false });
+    window.addEventListener('touchend', finishEventsCalendarDrag);
+    window.addEventListener('touchcancel', () => {
+      activeEventsCalendarDrag = null;
+      eventsCalendarScroll.classList.remove('is-dragging');
+    });
+
+    document.getElementById('event-form').addEventListener('submit', event => {
+      event.preventDefault();
+      const titleInput = document.getElementById('event-title');
+      const title = titleInput.value.trim();
+      titleInput.setCustomValidity(title ? "" : "Informe um título para o evento.");
+      if (!titleInput.reportValidity()) {
+        return;
+      }
+
+      const eventId = document.getElementById('event-id').value;
+      const eventIndex = calendarEvents.findIndex(item => item.id === eventId);
+      const calendarEvent = {
+        id: eventId || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+        kind: document.getElementById('event-kind').value || "event",
+        title,
+        date: document.getElementById('event-date').value,
+        time: document.getElementById('event-time').value,
+        category: document.getElementById('event-category').value,
+        notes: document.getElementById('event-notes').value.trim(),
+        done: eventIndex >= 0 ? calendarEvents[eventIndex].done === true : false
+      };
+      if (eventIndex >= 0) {
+        calendarEvents[eventIndex] = calendarEvent;
+      } else {
+        calendarEvents.push(calendarEvent);
+      }
+      saveCalendarEvents();
+      document.getElementById('event-dialog').close();
+    });
+
+    document.getElementById('event-title').addEventListener('input', event => {
+      event.target.setCustomValidity("");
+    });
+
+    document.getElementById('delete-calendar-event').addEventListener('click', () => {
+      const eventId = document.getElementById('event-id').value;
+      const calendarEvent = calendarEvents.find(item => item.id === eventId);
+      if (!calendarEvent || !window.confirm(`Excluir o evento "${calendarEvent.title}"?`)) {
+        return;
+      }
+      calendarEvents = calendarEvents.filter(item => item.id !== eventId);
+      saveCalendarEvents();
+      document.getElementById('event-dialog').close();
+    });
+
+    document.getElementById('close-event-dialog').addEventListener('click', () => {
+      document.getElementById('event-dialog').close();
+    });
+
+    document.getElementById('cancel-event-dialog').addEventListener('click', () => {
+      document.getElementById('event-dialog').close();
     });
 
     document.getElementById('previous-week').addEventListener('click', () => {
@@ -998,20 +1532,24 @@
 
     document.querySelectorAll('.nav-tab-item[data-view]').forEach(button => {
       button.addEventListener('click', () => {
-        const isMacro = button.dataset.view === "macro";
+        const view = button.dataset.view;
+        const isMacro = view === "macro";
         const wasMacro = !document.getElementById('macro-view').hidden;
         if (isMacro && !wasMacro) {
           monthlyDateWasSelected = false;
         }
-        if (!isMacro && wasMacro) {
+        if (view === "weekly" && wasMacro) {
           const dateToHighlight = monthlyDateWasSelected ? fromDateKey(selectedDateKey) : today;
           loadWeekDataForStart(dateToHighlight, dateToHighlight);
         }
-        document.getElementById('weekly-view').hidden = isMacro;
+        document.getElementById('weekly-view').hidden = view !== "weekly";
         document.getElementById('macro-view').hidden = !isMacro;
-        document.getElementById('page-title').textContent = isMacro
-          ? "Acompanhamento Mensal"
-          : "Planejamento Semanal";
+        document.getElementById('events-view').hidden = view !== "events";
+        document.getElementById('page-title').textContent = {
+          weekly: "Planejamento Semanal",
+          macro: "Acompanhamento Mensal",
+          events: "Eventos e Prazos"
+        }[view];
 
         document.querySelectorAll('.nav-tab-item[data-view]').forEach(viewButton => {
           const isActive = viewButton === button;
@@ -1021,6 +1559,8 @@
 
         if (isMacro) {
           renderMacro();
+        } else if (view === "events") {
+          renderEventsCalendar();
         }
       });
     });
