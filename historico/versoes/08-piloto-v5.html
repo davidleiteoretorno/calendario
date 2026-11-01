@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visão Semanal Editável - Produtividade</title>
+  <style>
+    :root {
+      --bg-main: #f1f5f9;
+      --card-bg: #ffffff;
+      --border-color: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+
+      --color-v: #059669;
+      --color-v-bg: #d1fae5;
+      --color-v-border: #10b981;
+
+      --color-r: #ea580c;
+      --color-r-bg: #ffedd5;
+      --color-r-border: #f97316;
+
+      --color-x: #dc2626;
+      --color-x-bg: #fee2e2;
+      --color-x-border: #ef4444;
+
+      --tag-fisica-bg: #e0e7ff;
+      --tag-fisica-txt: #3730a3;
+      --tag-pmal-bg: #fef3c7;
+      --tag-pmal-txt: #92400e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .app-container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .header-title h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+
+    /* Grid de 7 Colunas para a Semana */
+    .weekly-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(180px, 1fr));
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+    }
+
+    @media (max-width: 1100px) {
+      .weekly-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+    }
+
+    /* Super Card do Dia */
+    .day-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .day-header {
+      text-align: center;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 8px;
+    }
+
+    .day-name {
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--text-main);
+    }
+
+    .day-date {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Botões Rápidos de Status */
+    .status-group {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+    }
+
+    .status-btn {
+      flex: 1;
+      padding: 5px 0;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: #f8fafc;
+      font-weight: 800;
+      font-size: 0.75rem;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+
+    .status-btn.active-v { background: var(--color-v-bg); color: var(--color-v); border-color: var(--color-v-border); }
+    .status-btn.active-r { background: var(--color-r-bg); color: var(--color-r); border-color: var(--color-r-border); }
+    .status-btn.active-x { background: var(--color-x-bg); color: var(--color-x); border-color: var(--color-x-border); }
+
+    /* Seções de Conteúdo */
+    .section-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+      width: fit-content;
+    }
+
+    .label-fisica { background: var(--tag-fisica-bg); color: var(--tag-fisica-txt); }
+    .label-pmal { background: var(--tag-pmal-bg); color: var(--tag-pmal-txt); }
+
+    /* Item Editável */
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 6px 8px;
+    }
+
+    .task-item input[type="checkbox"] {
+      cursor: pointer;
+      width: 14px;
+      height: 14px;
+    }
+
+    .task-input {
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 0.8rem;
+      color: var(--text-main);
+      width: 100%;
+    }
+
+    .task-item.completed .task-input {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .btn-delete {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: bold;
+      padding: 0 2px;
+    }
+
+    .btn-delete:hover {
+      color: var(--color-x);
+    }
+
+    /* Botão de Adicionar Tópico */
+    .btn-add-item {
+      background: transparent;
+      border: 1px dashed var(--border-color);
+      border-radius: 6px;
+      padding: 5px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      margin-top: 2px;
+    }
+
+    .btn-add-item:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: #f5f3ff;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <div class="header-title">
+      <div>
+        <h1>Visão Semanal Interativa</h1>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Planejamento flexível e editável da Faculdade de Física & Concurso PMAL</p>
+      </div>
+    </div>
+
+    <!-- GRID DAS 7 COLUNAS DA SEMANA -->
+    <div class="weekly-grid" id="weekly-grid">
+      <!-- Colunas geradas dinamicamente via JS -->
+    </div>
+  </div>
+
+  <script>
+    // Estrutura inicial dos 7 dias da semana
+    const defaultWeekData = [
+      {
+        dayName: "Segunda",
+        status: { v: true, r: false, x: false },
+        fisica: [
+          { text: "Winterle: Tratamento geométrico", done: true },
+          { text: "Winterle: Tratamento algébrico", done: false },
+          { text: "Presencial: 18:00 - Geometria Analítica", done: false }
+        ],
+        pmal: [
+          { text: "Português: Compreensão de Textos", done: true },
+          { text: "RLM: Razão e Proporção", done: false }
+        ]
+      },
+      {
+        dayName: "Terça",
+        status: { v: false, r: false, x: false },
+        fisica: [
+          { text: "Winterle: Produto escalar e projeção", done: false },
+          { text: "Stewart: Fatoração e Apêndice A", done: false },
+          { text: "Presencial: 18:00 - Psicologia da Educação", done: false }
+        ],
+        pmal: [
+          { text: "Informática: Conceitos de Nuvem", done: false }
+        ]
+      },
+      {
+        dayName: "Quarta",
+        status: { v: false, r: false, x: false },
+        fisica: [
+          { text: "Química: Estrutura Atômica", done: false },
+          { text: "Stewart: Funções & Inversas", done: false },
+          { text: "Presencial: 19:00 - Química Geral", done: false }
+        ],
+        pmal: [
+          { text: "Direito: CTB e Direitos Humanos", done: false }
+        ]
+      },
+      {
+        dayName: "Quinta",
+        status: { v: false, r: false, x: false },
+        fisica: [
+          { text: "Fundamentos: Conjuntos e Funções", done: false },
+          { text: "Stewart: Trigonometria (Apêndice D)", done: false },
+          { text: "Presencial: 18:00 - Intro ao Lab", done: false }
+        ],
+        pmal: [
+          { text: "Matemática: Porcentagem e Juros", done: false }
+        ]
+      },
+      {
+        dayName: "Sexta",
+        status: { v: false, r: false, x: false },
+        fisica: [
+          { text: "Fundamentos: Matrizes e Determinantes", done: false },
+          { text: "Stewart: Limites e Continuidade", done: false },
+          { text: "Presencial: 18:00 - Fundamentos Mat.", done: false }
+        ],
+        pmal: [
+          { text: "Informática: Windows e Redes", done: false }
+        ]
+      },
+      {
+        dayName: "Sábado",
+        status: { v: false, r: false, x: false },
+        fisica: [
+          { text: "Revisão e exercícios Stewart", done: false }
+        ],
+        pmal: [
+          { text: "Simulado rápido de Exatas / RLM", done: false }
+        ]
+      },
+      {
+        dayName: "Domingo",
+        status: { v: false, r: false, x: false },
+        fisica: [
+          { text: "Organização das notas da semana", done: false }
+        ],
+        pmal: [
+          { text: "Revisão leve de Português", done: false }
+        ]
+      }
+    ];
+
+    let weekData = JSON.parse(localStorage.getItem('weekly_view_data')) || defaultWeekData;
+
+    function saveWeekData() {
+      localStorage.setItem('weekly_view_data', JSON.stringify(weekData));
+    }
+
+    function renderWeeklyGrid() {
+      const container = document.getElementById('weekly-grid');
+      container.innerHTML = '';
+
+      weekData.forEach((day, dayIndex) => {
+        const card = document.createElement('div');
+        card.className = 'day-card';
+
+        card.innerHTML = `
+          <div class="day-header">
+            <div class="day-name">${day.dayName}</div>
+          </div>
+
+          <!-- BOTÕES DE STATUS -->
+          <div class="status-group">
+            <button class="status-btn ${day.status.v ? 'active-v' : ''}" onclick="toggleDayStatus(${dayIndex}, 'v')">V</button>
+            <button class="status-btn ${day.status.r ? 'active-r' : ''}" onclick="toggleDayStatus(${dayIndex}, 'r')">R</button>
+            <button class="status-btn ${day.status.x ? 'active-x' : ''}" onclick="toggleDayStatus(${dayIndex}, 'x')">X</button>
+          </div>
+
+          <!-- SEÇÃO GRADUAÇÃO EM FÍSICA -->
+          <div class="section-block">
+            <span class="section-label label-fisica">Graduação em Física</span>
+            <div id="fisica-list-${dayIndex}">
+              ${day.fisica.map((item, itemIndex) => `
+                <div class="task-item ${item.done ? 'completed' : ''}">
+                  <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleTaskDone(${dayIndex}, 'fisica', ${itemIndex})">
+                  <input type="text" class="task-input" value="${item.text}" onchange="updateTaskText(${dayIndex}, 'fisica', ${itemIndex}, this.value)">
+                  <button class="btn-delete" onclick="deleteTask(${dayIndex}, 'fisica', ${itemIndex})">&times;</button>
+                </div>
+              `).join('')}
+            </div>
+            <button class="btn-add-item" onclick="addTask(${dayIndex}, 'fisica')">+ Add Tópico Física</button>
+          </div>
+
+          <!-- SEÇÃO CONCURSO PMAL / OUTROS -->
+          <div class="section-block">
+            <span class="section-label label-pmal">Concurso / Outros</span>
+            <div id="pmal-list-${dayIndex}">
+              ${day.pmal.map((item, itemIndex) => `
+                <div class="task-item ${item.done ? 'completed' : ''}">
+                  <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleTaskDone(${dayIndex}, 'pmal', ${itemIndex})">
+                  <input type="text" class="task-input" value="${item.text}" onchange="updateTaskText(${dayIndex}, 'pmal', ${itemIndex}, this.value)">
+                  <button class="btn-delete" onclick="deleteTask(${dayIndex}, 'pmal', ${itemIndex})">&times;</button>
+                </div>
+              `).join('')}
+            </div>
+            <button class="btn-add-item" onclick="addTask(${dayIndex}, 'pmal')">+ Add Tópico Concurso</button>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function toggleDayStatus(dayIndex, type) {
+      weekData[dayIndex].status[type] = !weekData[dayIndex].status[type];
+      saveWeekData();
+      renderWeeklyGrid();
+    }
+
+    function toggleTaskDone(dayIndex, section, itemIndex) {
+      weekData[dayIndex][section][itemIndex].done = !weekData[dayIndex][section][itemIndex].done;
+      saveWeekData();
+      renderWeeklyGrid();
+    }
+
+    function updateTaskText(dayIndex, section, itemIndex, newText) {
+      weekData[dayIndex][section][itemIndex].text = newText;
+      saveWeekData();
+    }
+
+    function addTask(dayIndex, section) {
+      weekData[dayIndex][section].push({ text: "Novo tópico editável", done: false });
+      saveWeekData();
+      renderWeeklyGrid();
+    }
+
+    function deleteTask(dayIndex, section, itemIndex) {
+      weekData[dayIndex][section].splice(itemIndex, 1);
+      saveWeekData();
+      renderWeeklyGrid();
+    }
+
+    renderWeeklyGrid();
+  </script>
+</body>
+</html>

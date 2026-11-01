@@ -3,11 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard de Produtividade - Piloto V4</title>
+  <title>Visão Semanal Editável - Produtividade</title>
   <style>
-    /* ==========================================================================
-       1. VARIÁVEIS DE CORES E TEMA
-       ========================================================================== */
     :root {
       --bg-main: #f1f5f9;
       --card-bg: #ffffff;
@@ -17,7 +14,6 @@
       --primary: #4f46e5;
       --primary-hover: #4338ca;
 
-      /* Cores de Status Diário (V / R / X) */
       --color-v: #059669;
       --color-v-bg: #d1fae5;
       --color-v-border: #10b981;
@@ -30,10 +26,9 @@
       --color-x-bg: #fee2e2;
       --color-x-border: #ef4444;
 
-      /* Tags */
-      --tag-fisica: #dbeafe;
-      --tag-fisica-txt: #1e40af;
-      --tag-pmal: #fef3c7;
+      --tag-fisica-bg: #e0e7ff;
+      --tag-fisica-txt: #3730a3;
+      --tag-pmal-bg: #fef3c7;
       --tag-pmal-txt: #92400e;
     }
 
@@ -52,471 +47,372 @@
     }
 
     .app-container {
-      max-width: 1300px;
+      max-width: 1400px;
       margin: 0 auto;
     }
 
-    /* ==========================================================================
-       2. NAVEGAÇÃO POR ABAS
-       ========================================================================== */
-    .tabs-header {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-
-    .tab-btn {
-      background: #ffffff;
-      border: 1px solid var(--border-color);
-      padding: 10px 18px;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .tab-btn:hover {
-      background: #f8fafc;
-      color: var(--text-main);
-    }
-
-    .tab-btn.active {
-      background: var(--primary);
-      color: #ffffff;
-      border-color: var(--primary);
-      box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);
-    }
-
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    /* ==========================================================================
-       3. CARDS E COMPONENTES GERAIS
-       ========================================================================== */
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
-      margin-bottom: 20px;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .stat-card {
-      background: #f8fafc;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 12px;
-      text-align: center;
-    }
-
-    .stat-card.highlight {
-      background: #e0e7ff;
-      border-color: #a5b4fc;
-    }
-
-    .stat-value {
-      font-size: 1.3rem;
-      font-weight: 800;
-      margin-top: 4px;
-    }
-
-    .stat-label {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      font-weight: 700;
-    }
-
-    .btn {
-      background: #ffffff;
-      border: 1px solid var(--border-color);
-      padding: 6px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 700;
-      font-size: 0.85rem;
-    }
-
-    .btn-primary { background: var(--primary); color: #fff; border: none; }
-    .btn-primary:hover { background: var(--primary-hover); }
-
-    /* ==========================================================================
-       4. ABA 1: VISÃO GERAL
-       ========================================================================== */
-    .geral-grid {
-      display: grid;
-      grid-template-columns: 1fr 340px;
-      gap: 20px;
-    }
-
-    @media (max-width: 900px) {
-      .geral-grid { grid-template-columns: 1fr; }
-    }
-
-    /* ==========================================================================
-       5. ABA 2: VISÃO SEMANAL (COLUNAS)
-       ========================================================================== */
-    .weekly-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-      gap: 12px;
-    }
-
-    .day-column {
-      background: #f8fafc;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .day-column-header {
-      font-weight: 800;
-      font-size: 0.95rem;
-      text-align: center;
-      padding-bottom: 6px;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .section-title {
-      font-size: 0.75rem;
-      font-weight: 800;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      margin-top: 4px;
-    }
-
-    .editable-item {
-      background: #ffffff;
-      border: 1px solid var(--border-color);
-      padding: 6px 8px;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .editable-item input[type="text"] {
-      border: none;
-      outline: none;
-      width: 100%;
-      font-size: 0.8rem;
-      background: transparent;
-    }
-
-    /* ==========================================================================
-       6. ABA 3: PRODUTIVIDADE MACRO (HABIT TRACKER)
-       ========================================================================== */
-    .tracker-table-container {
-      overflow-x: auto;
-    }
-
-    .tracker-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.8rem;
-    }
-
-    .tracker-table th, .tracker-table td {
-      border: 1px solid var(--border-color);
-      padding: 8px;
-      text-align: center;
-    }
-
-    .tracker-table th:first-child, .tracker-table td:first-child {
-      text-align: left;
-      font-weight: 700;
-      min-width: 150px;
-    }
-
-    .dot {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      display: inline-block;
-      cursor: pointer;
-      border: 1px solid var(--border-color);
-      background: #f1f5f9;
-    }
-
-    .dot.active-v { background: var(--color-v); border-color: var(--color-v-border); }
-    .dot.active-r { background: var(--color-r); border-color: var(--color-r-border); }
-    .dot.active-x { background: var(--color-x); border-color: var(--color-x-border); }
-
-    /* ==========================================================================
-       7. ABA 4: EVENTOS E PRAZOS
-       ========================================================================== */
-    .event-card {
-      background: #f8fafc;
-      border-left: 4px solid var(--primary);
-      padding: 10px 14px;
-      border-radius: 0 8px 8px 0;
-      margin-bottom: 8px;
+    .header-title {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 20px;
     }
 
-    .event-date {
-      font-size: 0.75rem;
+    .header-title h1 {
+      font-size: 1.5rem;
       font-weight: 800;
+    }
+
+    /* Grid de 7 Colunas para a Semana */
+    .weekly-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(180px, 1fr));
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+    }
+
+    @media (max-width: 1100px) {
+      .weekly-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+    }
+
+    /* Super Card do Dia */
+    .day-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .day-header {
+      text-align: center;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 8px;
+    }
+
+    .day-name {
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--text-main);
+    }
+
+    .day-date {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Botões Rápidos de Status */
+    .status-group {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+    }
+
+    .status-btn {
+      flex: 1;
+      padding: 5px 0;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: #f8fafc;
+      font-weight: 800;
+      font-size: 0.75rem;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+
+    .status-btn.active-v { background: var(--color-v-bg); color: var(--color-v); border-color: var(--color-v-border); }
+    .status-btn.active-r { background: var(--color-r-bg); color: var(--color-r); border-color: var(--color-r-border); }
+    .status-btn.active-x { background: var(--color-x-bg); color: var(--color-x); border-color: var(--color-x-border); }
+
+    /* Seções de Conteúdo */
+    .section-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+      width: fit-content;
+    }
+
+    .label-fisica { background: var(--tag-fisica-bg); color: var(--tag-fisica-txt); }
+    .label-pmal { background: var(--tag-pmal-bg); color: var(--tag-pmal-txt); }
+
+    /* Item Editável */
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 6px 8px;
+    }
+
+    .task-item input[type="checkbox"] {
+      cursor: pointer;
+      width: 14px;
+      height: 14px;
+    }
+
+    .task-input {
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 0.8rem;
+      color: var(--text-main);
+      width: 100%;
+    }
+
+    .task-item.completed .task-input {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .btn-delete {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: bold;
+      padding: 0 2px;
+    }
+
+    .btn-delete:hover {
+      color: var(--color-x);
+    }
+
+    /* Botão de Adicionar Tópico */
+    .btn-add-item {
+      background: transparent;
+      border: 1px dashed var(--border-color);
+      border-radius: 6px;
+      padding: 5px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      margin-top: 2px;
+    }
+
+    .btn-add-item:hover {
+      border-color: var(--primary);
       color: var(--primary);
+      background: #f5f3ff;
     }
   </style>
 </head>
 <body>
 
   <div class="app-container">
-
-    <!-- NAVEGAÇÃO DE ABAS -->
-    <div class="tabs-header">
-      <button class="tab-btn active" onclick="switchTab('tab-geral', this)">
-        <span>📊</span> Visão Geral
-      </button>
-      <button class="tab-btn" onclick="switchTab('tab-semanal', this)">
-        <span>🗓️</span> Cronograma Semanal
-      </button>
-      <button class="tab-btn" onclick="switchTab('tab-macro', this)">
-        <span>📈</span> Produtividade Macro
-      </button>
-      <button class="tab-btn" onclick="switchTab('tab-eventos', this)">
-        <span>📅</span> Eventos & Prazos
-      </button>
-    </div>
-
-    <!-- ABA 1: VISÃO GERAL -->
-    <div id="tab-geral" class="tab-content active">
-      <div class="stats-grid">
-        <div class="stat-card highlight">
-          <div class="stat-label">Sequência (Sem R)</div>
-          <div class="stat-value" id="geral-streak" style="color: var(--primary);">0 dias</div>
-        </div>
-        <div class="stat-card highlight">
-          <div class="stat-label">Recorde Histórico (V + sem R)</div>
-          <div class="stat-value" id="geral-record" style="color: var(--primary);">0 dias</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Produtivos (V)</div>
-          <div class="stat-value" style="color: var(--color-v);">18</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Ruim (R)</div>
-          <div class="stat-value" style="color: var(--color-r);">3</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Inativo (X)</div>
-          <div class="stat-value" style="color: var(--color-x);">9</div>
-        </div>
-      </div>
-
-      <div class="geral-grid">
-        <div class="card">
-          <h2>Foco de Hoje</h2>
-          <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; margin-bottom: 16px;">
-            Resumo dos compromissos e tópicos do dia.
-          </p>
-          <div class="editable-item" style="margin-bottom: 8px;">
-            <input type="checkbox"> <span><strong>Física:</strong> Winterle - Produto Escalar</span>
-          </div>
-          <div class="editable-item" style="margin-bottom: 8px;">
-            <input type="checkbox"> <span><strong>PMAL:</strong> Resolução de 15 questões de RLM</span>
-          </div>
-        </div>
-
-        <div class="card">
-          <h2>Avisos & Prazos Próximos</h2>
-          <div style="margin-top: 12px;">
-            <div class="event-card">
-              <div>
-                <strong>Entrega Relatório Química</strong>
-                <div class="event-date">Em 3 dias</div>
-              </div>
-            </div>
-            <div class="event-card">
-              <div>
-                <strong>Prova de Geometria Analítica</strong>
-                <div class="event-date">Em 12 dias</div>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div class="header-title">
+      <div>
+        <h1>Visão Semanal Interativa</h1>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Planejamento flexível e editável da Faculdade de Física & Concurso PMAL</p>
       </div>
     </div>
 
-    <!-- ABA 2: VISÃO SEMANAL -->
-    <div id="tab-semanal" class="tab-content">
-      <div class="card">
-        <h2>Cronograma Semanal Editável</h2>
-        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">
-          Aloque matérias da faculdade, tópicos do concurso e tarefas para cada dia.
-        </p>
-
-        <div class="weekly-grid">
-          <!-- Segunda -->
-          <div class="day-column">
-            <div class="day-column-header">Segunda</div>
-            <div class="section-title">Física</div>
-            <div class="editable-item"><input type="checkbox"><input type="text" value="Winterle Cap 1"></div>
-            <div class="section-title">Concurso</div>
-            <div class="editable-item"><input type="checkbox"><input type="text" value="Português Sintaxe"></div>
-          </div>
-          <!-- Terça -->
-          <div class="day-column">
-            <div class="day-column-header">Terça</div>
-            <div class="section-title">Física</div>
-            <div class="editable-item"><input type="checkbox"><input type="text" value="Stewart Apêndice A"></div>
-            <div class="section-title">Concurso</div>
-            <div class="editable-item"><input type="checkbox"><input type="text" value="Informática Redes"></div>
-          </div>
-          <!-- Quarta -->
-          <div class="day-column">
-            <div class="day-column-header">Quarta</div>
-            <div class="section-title">Física</div>
-            <div class="editable-item"><input type="checkbox"><input type="text" value="Química Geral"></div>
-            <div class="section-title">Concurso</div>
-            <div class="editable-item"><input type="checkbox"><input type="text" value="RLM Porcentagem"></div>
-          </div>
-          <!-- Quinta -->
-          <div class="day-column">
-            <div class="day-column-header">Quinta</div>
-            <div class="section-title">Física</div>
-            <div class="editable-item"><input type="checkbox"><input type="text" value="Fundamentos Mat"></div>
-            <div class="section-title">Concurso</div>
-            <div class="editable-item"><input type="checkbox"><input type="text" value="Direito Const."></div>
-          </div>
-          <!-- Sexta -->
-          <div class="day-column">
-            <div class="day-column-header">Sexta</div>
-            <div class="section-title">Física</div>
-            <div class="editable-item"><input type="checkbox"><input type="text" value="Revisão Semanal"></div>
-            <div class="section-title">Concurso</div>
-            <div class="editable-item"><input type="checkbox"><input type="text" value="Simulado Curto"></div>
-          </div>
-          <!-- Sábado -->
-          <div class="day-column">
-            <div class="day-column-header">Sábado</div>
-            <div class="section-title">Livre / Extras</div>
-            <div class="editable-item"><input type="checkbox"><input type="text" value="Exercícios Stewart"></div>
-          </div>
-          <!-- Domingo -->
-          <div class="day-column">
-            <div class="day-column-header">Domingo</div>
-            <div class="section-title">Descanso</div>
-            <div class="editable-item"><input type="checkbox"><input type="text" value="Planejamento"></div>
-          </div>
-        </div>
-      </div>
+    <!-- GRID DAS 7 COLUNAS DA SEMANA -->
+    <div class="weekly-grid" id="weekly-grid">
+      <!-- Colunas geradas dinamicamente via JS -->
     </div>
-
-    <!-- ABA 3: PRODUTIVIDADE MACRO -->
-    <div id="tab-macro" class="tab-content">
-      <div class="card">
-        <h2>Habit Tracker & Matriz Mensal</h2>
-        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">
-          Acompanhamento visual diário de hábitos e consistência.
-        </p>
-
-        <div class="tracker-table-container">
-          <table class="tracker-table">
-            <thead>
-              <tr id="tracker-header">
-                <th>Hábito / Meta</th>
-                <!-- Gerado via JS (1 a 31) -->
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Estudo de Física</td>
-                <script>
-                  for(let i=1; i<=31; i++) {
-                    document.write(`<td><span class="dot ${i%2===0 ? 'active-v' : ''}"></span></td>`);
-                  }
-                </script>
-              </tr>
-              <tr>
-                <td>Resolução de Questões</td>
-                <script>
-                  for(let i=1; i<=31; i++) {
-                    document.write(`<td><span class="dot ${i%3===0 ? 'active-v' : ''}"></span></td>`);
-                  }
-                </script>
-              </tr>
-              <tr>
-                <td>Dia Limpo (Sem R)</td>
-                <script>
-                  for(let i=1; i<=31; i++) {
-                    document.write(`<td><span class="dot ${i===5 || i===23 ? 'active-r' : 'active-v'}"></span></td>`);
-                  }
-                </script>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- ABA 4: EVENTOS E PRAZOS -->
-    <div id="tab-eventos" class="tab-content">
-      <div class="card">
-        <h2>Calendário de Eventos & Datas Importantes</h2>
-        <div style="margin-top: 16px;">
-          <div class="event-card">
-            <div>
-              <strong>Prova presencial de Geometria Analítica</strong>
-              <div class="event-date">15 de Novembro de 2026</div>
-            </div>
-            <button class="btn">&times;</button>
-          </div>
-          <div class="event-card">
-            <div>
-              <strong>Inscrições PMAL</strong>
-              <div class="event-date">20 de Novembro de 2026</div>
-            </div>
-            <button class="btn">&times;</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
   </div>
 
   <script>
-    function switchTab(tabId, btn) {
-      document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(tb => tb.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
-      btn.classList.add('active');
+    // Estrutura inicial dos 7 dias da semana
+    const defaultWeekData = [
+      {
+        dayName: "Segunda",
+        status: { v: true, r: false, x: false },
+        fisica: [
+          { text: "Winterle: Tratamento geométrico", done: true },
+          { text: "Winterle: Tratamento algébrico", done: false },
+          { text: "Presencial: 18:00 - Geometria Analítica", done: false }
+        ],
+        pmal: [
+          { text: "Português: Compreensão de Textos", done: true },
+          { text: "RLM: Razão e Proporção", done: false }
+        ]
+      },
+      {
+        dayName: "Terça",
+        status: { v: false, r: false, x: false },
+        fisica: [
+          { text: "Winterle: Produto escalar e projeção", done: false },
+          { text: "Stewart: Fatoração e Apêndice A", done: false },
+          { text: "Presencial: 18:00 - Psicologia da Educação", done: false }
+        ],
+        pmal: [
+          { text: "Informática: Conceitos de Nuvem", done: false }
+        ]
+      },
+      {
+        dayName: "Quarta",
+        status: { v: false, r: false, x: false },
+        fisica: [
+          { text: "Química: Estrutura Atômica", done: false },
+          { text: "Stewart: Funções & Inversas", done: false },
+          { text: "Presencial: 19:00 - Química Geral", done: false }
+        ],
+        pmal: [
+          { text: "Direito: CTB e Direitos Humanos", done: false }
+        ]
+      },
+      {
+        dayName: "Quinta",
+        status: { v: false, r: false, x: false },
+        fisica: [
+          { text: "Fundamentos: Conjuntos e Funções", done: false },
+          { text: "Stewart: Trigonometria (Apêndice D)", done: false },
+          { text: "Presencial: 18:00 - Intro ao Lab", done: false }
+        ],
+        pmal: [
+          { text: "Matemática: Porcentagem e Juros", done: false }
+        ]
+      },
+      {
+        dayName: "Sexta",
+        status: { v: false, r: false, x: false },
+        fisica: [
+          { text: "Fundamentos: Matrizes e Determinantes", done: false },
+          { text: "Stewart: Limites e Continuidade", done: false },
+          { text: "Presencial: 18:00 - Fundamentos Mat.", done: false }
+        ],
+        pmal: [
+          { text: "Informática: Windows e Redes", done: false }
+        ]
+      },
+      {
+        dayName: "Sábado",
+        status: { v: false, r: false, x: false },
+        fisica: [
+          { text: "Revisão e exercícios Stewart", done: false }
+        ],
+        pmal: [
+          { text: "Simulado rápido de Exatas / RLM", done: false }
+        ]
+      },
+      {
+        dayName: "Domingo",
+        status: { v: false, r: false, x: false },
+        fisica: [
+          { text: "Organização das notas da semana", done: false }
+        ],
+        pmal: [
+          { text: "Revisão leve de Português", done: false }
+        ]
+      }
+    ];
+
+    let weekData = JSON.parse(localStorage.getItem('weekly_view_data')) || defaultWeekData;
+
+    function saveWeekData() {
+      localStorage.setItem('weekly_view_data', JSON.stringify(weekData));
     }
 
-    // Gerar cabeçalho dos dias no tracker
-    const headerRow = document.getElementById('tracker-header');
-    for (let i = 1; i <= 31; i++) {
-      const th = document.createElement('th');
-      th.textContent = i;
-      headerRow.appendChild(th);
+    function renderWeeklyGrid() {
+      const container = document.getElementById('weekly-grid');
+      container.innerHTML = '';
+
+      weekData.forEach((day, dayIndex) => {
+        const card = document.createElement('div');
+        card.className = 'day-card';
+
+        card.innerHTML = `
+          <div class="day-header">
+            <div class="day-name">${day.dayName}</div>
+          </div>
+
+          <!-- BOTÕES DE STATUS -->
+          <div class="status-group">
+            <button class="status-btn ${day.status.v ? 'active-v' : ''}" onclick="toggleDayStatus(${dayIndex}, 'v')">V</button>
+            <button class="status-btn ${day.status.r ? 'active-r' : ''}" onclick="toggleDayStatus(${dayIndex}, 'r')">R</button>
+            <button class="status-btn ${day.status.x ? 'active-x' : ''}" onclick="toggleDayStatus(${dayIndex}, 'x')">X</button>
+          </div>
+
+          <!-- SEÇÃO GRADUAÇÃO EM FÍSICA -->
+          <div class="section-block">
+            <span class="section-label label-fisica">Graduação em Física</span>
+            <div id="fisica-list-${dayIndex}">
+              ${day.fisica.map((item, itemIndex) => `
+                <div class="task-item ${item.done ? 'completed' : ''}">
+                  <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleTaskDone(${dayIndex}, 'fisica', ${itemIndex})">
+                  <input type="text" class="task-input" value="${item.text}" onchange="updateTaskText(${dayIndex}, 'fisica', ${itemIndex}, this.value)">
+                  <button class="btn-delete" onclick="deleteTask(${dayIndex}, 'fisica', ${itemIndex})">&times;</button>
+                </div>
+              `).join('')}
+            </div>
+            <button class="btn-add-item" onclick="addTask(${dayIndex}, 'fisica')">+ Add Tópico Física</button>
+          </div>
+
+          <!-- SEÇÃO CONCURSO PMAL / OUTROS -->
+          <div class="section-block">
+            <span class="section-label label-pmal">Concurso / Outros</span>
+            <div id="pmal-list-${dayIndex}">
+              ${day.pmal.map((item, itemIndex) => `
+                <div class="task-item ${item.done ? 'completed' : ''}">
+                  <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleTaskDone(${dayIndex}, 'pmal', ${itemIndex})">
+                  <input type="text" class="task-input" value="${item.text}" onchange="updateTaskText(${dayIndex}, 'pmal', ${itemIndex}, this.value)">
+                  <button class="btn-delete" onclick="deleteTask(${dayIndex}, 'pmal', ${itemIndex})">&times;</button>
+                </div>
+              `).join('')}
+            </div>
+            <button class="btn-add-item" onclick="addTask(${dayIndex}, 'pmal')">+ Add Tópico Concurso</button>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
     }
+
+    function toggleDayStatus(dayIndex, type) {
+      weekData[dayIndex].status[type] = !weekData[dayIndex].status[type];
+      saveWeekData();
+      renderWeeklyGrid();
+    }
+
+    function toggleTaskDone(dayIndex, section, itemIndex) {
+      weekData[dayIndex][section][itemIndex].done = !weekData[dayIndex][section][itemIndex].done;
+      saveWeekData();
+      renderWeeklyGrid();
+    }
+
+    function updateTaskText(dayIndex, section, itemIndex, newText) {
+      weekData[dayIndex][section][itemIndex].text = newText;
+      saveWeekData();
+    }
+
+    function addTask(dayIndex, section) {
+      weekData[dayIndex][section].push({ text: "Novo tópico editável", done: false });
+      saveWeekData();
+      renderWeeklyGrid();
+    }
+
+    function deleteTask(dayIndex, section, itemIndex) {
+      weekData[dayIndex][section].splice(itemIndex, 1);
+      saveWeekData();
+      renderWeeklyGrid();
+    }
+
+    renderWeeklyGrid();
   </script>
 </body>
 </html>
