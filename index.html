@@ -1,31 +1,312 @@
-<!-- ====================================================================
-     2. BARRA DE NAVEGAÇÃO SUPERIOR (ABAS)
-     Alterna a exibição das seções sem recarregar a página.
-     ==================================================================== -->
-<nav class="top-nav">
-  <button class="nav-tab active" onclick="switchTab('tab-calendario')">📅 Calendário & Hábitos</button>
-  <button class="nav-tab" onclick="switchTab('tab-fisica')">🎓 Faculdade de Física</button>
-  <button class="nav-tab" onclick="switchTab('tab-pmal')">🛡️ PMAL & Concursos</button>
-</nav>
+  /* Cores de Status Diário (V / R / X) */
+  --color-v: #059669;          /* Verde (Produtivo) */
+  --color-v-bg: #d1fae5;
+  --color-v-border: #10b981;
 
-<!-- ====================================================================
-     3. ABA 1: CALENDÁRIO DE PRODUTIVIDADE
-     Gerencia métricas de dias verdes, sequências e tarefas da faculdade.
-     ==================================================================== -->
+  --color-r: #ea580c;          /* Laranja (Ruim / Desvio) */
+  --color-r-bg: #ffedd5;
+  --color-r-border: #f97316;
+
+  --color-x: #dc2626;          /* Vermelho (Inativo) */
+  --color-x-bg: #fee2e2;
+  --color-x-border: #ef4444;
+
+  /* Tags do Cronograma de Física */
+  --tag-win: #fee2e2; --tag-win-txt: #991b1b;
+  --tag-stw: #dbeafe; --tag-stw-txt: #1e40af;
+  --tag-fis: #fef3c7; --tag-fis-txt: #92400e;
+  --tag-aul: #f3e8ff; --tag-aul-txt: #6b21a8;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  padding: 20px;
+  min-height: 100vh;
+}
+
+.app-container {
+  max-width: 1250px;
+  margin: 0 auto;
+}
+
+/* ==========================================================================
+   2. BARRA DE NAVEGAÇÃO DE ABAS
+   ========================================================================== */
+.tabs-header {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tab-btn:hover {
+  background: #f8fafc;
+  color: var(--text-main);
+}
+
+.tab-btn.active {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* ==========================================================================
+   3. ESTRUTURA DOS CARDS DE CONTEÚDO (DASHBOARD)
+   ========================================================================== */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+  margin-bottom: 20px;
+}
+
+/* Grid do Calendário + Painel Lateral */
+.calendar-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .calendar-layout { grid-template-columns: 1fr; }
+}
+
+/* Cards de Estatísticas no Topo */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px 10px;
+  text-align: center;
+}
+
+.stat-card.highlight {
+  background: #e0e7ff;
+  border-color: #a5b4fc;
+}
+
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-top: 4px;
+}
+
+.stat-label {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Navegação do Mês */
+.calendar-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.month-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.btn {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+
+.btn:hover { background: #f1f5f9; }
+.btn-primary { background: var(--primary); color: #fff; border: none; }
+.btn-primary:hover { background: var(--primary-hover); }
+
+/* Grid dos Dias do Mês */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.weekday {
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  padding: 6px 0;
+}
+
+.day-cell {
+  aspect-ratio: 1;
+  min-height: 75px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.day-cell:hover { border-color: var(--text-muted); background: #f8fafc; }
+.day-cell.other-month { opacity: 0.35; background: #f8fafc; }
+.day-cell.today { border: 2px solid var(--primary); background: #f5f3ff; }
+.day-cell.selected { box-shadow: 0 0 0 2px var(--primary); }
+
+.day-header { display: flex; justify-content: space-between; align-items: center; }
+.day-num { font-size: 0.88rem; font-weight: 800; }
+
+.badge-group { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 4px; }
+.badge { font-size: 0.65rem; font-weight: 800; padding: 2px 5px; border-radius: 4px; }
+.badge-v { background: var(--color-v-bg); color: var(--color-v); border: 1px solid var(--color-v-border); }
+.badge-r { background: var(--color-r-bg); color: var(--color-r); border: 1px solid var(--color-r-border); }
+.badge-x { background: var(--color-x-bg); color: var(--color-x); border: 1px solid var(--color-x-border); }
+
+.agenda-flag {
+  font-size: 0.65rem;
+  background: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #3b82f6;
+  padding: 1px 4px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+/* Painel Lateral */
+.sidebar-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toggle-group { display: flex; gap: 8px; margin-top: 6px; }
+.toggle-btn {
+  flex: 1; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color);
+  background: #f8fafc; font-weight: 800; font-size: 0.85rem; cursor: pointer; text-align: center;
+}
+.toggle-btn.active-v { background: var(--color-v-bg); color: var(--color-v); border-color: var(--color-v-border); }
+.toggle-btn.active-r { background: var(--color-r-bg); color: var(--color-r); border-color: var(--color-r-border); }
+.toggle-btn.active-x { background: var(--color-x-bg); color: var(--color-x); border-color: var(--color-x-border); }
+
+.input-row { display: flex; gap: 6px; margin-top: 8px; margin-bottom: 12px; }
+.input-field {
+  flex: 1; padding: 8px 10px; border: 1px solid var(--border-color);
+  border-radius: 6px; font-size: 0.85rem; outline: none;
+}
+.input-field:focus { border-color: var(--primary); }
+
+.item-list { list-style: none; display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
+.item-card {
+  background: #f8fafc; border: 1px solid var(--border-color);
+  padding: 8px 10px; border-radius: 6px; font-size: 0.85rem;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.item-card button { background: none; border: none; color: var(--color-x); cursor: pointer; font-weight: bold; }
+
+/* ==========================================================================
+   4. TABELAS E CARDS DA GRADUAÇÃO E CONCURSOS
+   ========================================================================== */
+.progress-bar-bg { width: 100%; height: 10px; background: var(--border-color); border-radius: 999px; overflow: hidden; margin: 10px 0 20px; }
+.progress-bar-fill { height: 100%; width: 0%; background: var(--primary); transition: width 0.3s; }
+
+.table-responsive { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
+th { background: #f8fafc; padding: 10px; border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-weight: 700; }
+td { padding: 12px 10px; border-bottom: 1px solid var(--border-color); vertical-align: top; }
+
+.tag { display: inline-block; font-size: 0.68rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-bottom: 4px; text-transform: uppercase; }
+.tag-win { background: var(--tag-win); color: var(--tag-win-txt); }
+.tag-stw { background: var(--tag-stw); color: var(--tag-stw-txt); }
+.tag-fis { background: var(--tag-fis); color: var(--tag-fis-txt); }
+.tag-aul { background: var(--tag-aul); color: var(--tag-aul-txt); }
+
+.task-check { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 4px; cursor: pointer; font-size: 0.82rem; }
+.task-check input { margin-top: 2px; }
+.task-check input:checked + span { text-decoration: line-through; color: var(--text-muted); opacity: 0.7; }
+
+
+<!-- BARRA DE NAVEGAÇÃO ENTRE ABAS -->
+<div class="tabs-header">
+  <button class="tab-btn active" onclick="switchTab('tab-calendario', this)">
+    <span>📅</span> Calendário & Hábitos
+  </button>
+  <button class="tab-btn" onclick="switchTab('tab-fisica', this)">
+    <span>🎓</span> Faculdade de Física
+  </button>
+  <button class="tab-btn" onclick="switchTab('tab-pmal', this)">
+    <span>🛡️</span> PMAL & Concursos
+  </button>
+</div>
+
+<!-- ==========================================================================
+   ABA 1: CALENDÁRIO DE PRODUTIVIDADE
+   ========================================================================== -->
 <div id="tab-calendario" class="tab-content active">
-  <div class="app-container-cal">
+  <div class="calendar-layout">
     
-    <!-- PAINEL ESQUERDO: MÉTRICAS E GRADE DO CALENDÁRIO -->
+    <!-- CARD DA ESQUERDA: GRID DO MÊS -->
     <div class="card">
-      <!-- Métricas de Desempenho -->
-      <div class="stats-container">
-        <div class="stat-card streak">
-          <div class="stat-label">Sequência Limpa</div>
+      <div class="stats-grid">
+        <div class="stat-card highlight">
+          <div class="stat-label">Sequência</div>
           <div class="stat-value" id="streak-val" style="color: var(--primary);">0 dias</div>
         </div>
-        <div class="stat-card streak">
+        <div class="stat-card highlight">
           <div class="stat-label">Recorde Histórico</div>
-          <div class="stat-value" id="record-val" style="color: var(--primary);">24 dias</div>
+          <div class="stat-value" id="record-val" style="color: var(--primary);">0 dias</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Produtivos (V)</div>
@@ -41,48 +322,46 @@
         </div>
       </div>
 
-      <!-- Cabeçalho de Navegação do Mês -->
-      <div class="calendar-header">
-        <div class="calendar-title" id="month-year-display">--</div>
-        <div class="nav-btns">
+      <div class="calendar-nav">
+        <div class="month-title" id="month-year-display">--</div>
+        <div style="display: flex; gap: 6px;">
           <button class="btn" id="prev-btn">&lt;</button>
           <button class="btn" id="today-btn">Hoje</button>
           <button class="btn" id="next-btn">&gt;</button>
         </div>
       </div>
 
-      <!-- Grade Principal de Dias (Preenchido dinamicamente pelo JS) -->
       <div class="calendar-grid" id="calendar-grid"></div>
     </div>
 
-    <!-- PAINEL DIREITO: INTERAÇÃO DO DIA SELECIONADO & AVISOS -->
-    <div class="card">
-      <div class="sidebar-section">
-        <div class="panel-title">
-          <span>🎓 Avisos / Tarefas Rápidas</span>
+    <!-- CARD DA DIREITA: PAINEL LATERAL DE STATUS E TAREFAS -->
+    <div>
+      <div class="card">
+        <div class="sidebar-title">🎓 Faculdade (Avisos/Tarefas)</div>
+        <div class="input-row">
+          <input type="text" id="uni-input" class="input-field" placeholder="Nova tarefa da faculdade...">
+          <button class="btn btn-primary" onclick="addUniTask()">+</button>
         </div>
-        <div class="input-group">
-          <input type="text" id="uni-task-input" class="custom-input" placeholder="Nova tarefa...">
-          <button class="btn btn-primary" id="add-uni-task-btn">+</button>
-        </div>
-        <ul class="item-list" id="uni-task-list"></ul>
+        <ul class="item-list" id="uni-list"></ul>
       </div>
 
-      <div class="sidebar-section" style="margin-bottom: 0;">
-        <div class="panel-title" id="selected-date-display">Selecione um dia</div>
+      <div class="card">
+        <div class="sidebar-title" id="selected-date-display">Selecione um dia</div>
+        
         <div style="margin-bottom: 12px;">
-          <div class="stat-label">Status do Dia</div>
+          <div class="stat-label" style="margin-bottom: 4px;">Status do Dia</div>
           <div class="toggle-group">
-            <button class="toggle-btn" id="btn-toggle-v">V</button>
-            <button class="toggle-btn" id="btn-toggle-r">R</button>
-            <button class="toggle-btn" id="btn-toggle-x">X</button>
+            <button class="toggle-btn" id="btn-v" onclick="toggleStatus('v')">V</button>
+            <button class="toggle-btn" id="btn-r" onclick="toggleStatus('r')">R</button>
+            <button class="toggle-btn" id="btn-x" onclick="toggleStatus('x')">X</button>
           </div>
         </div>
+
         <div>
-          <div class="stat-label" style="margin-bottom: 6px;">Compromissos do Dia</div>
-          <div class="input-group">
-            <input type="text" id="event-input" class="custom-input" placeholder="Novo evento...">
-            <button class="btn" id="add-event-btn">+</button>
+          <div class="stat-label" style="margin-bottom: 4px;">Compromissos do Dia</div>
+          <div class="input-row">
+            <input type="text" id="event-input" class="input-field" placeholder="Novo evento...">
+            <button class="btn" onclick="addEvent()">+</button>
           </div>
           <ul class="item-list" id="event-list"></ul>
         </div>
@@ -92,174 +371,121 @@
   </div>
 </div>
 
-<!-- ====================================================================
-     4. ABA 2: GRADUAÇÃO EM FÍSICA
-     Checklist da grade semanal com barra de progresso.
-     ==================================================================== -->
+<!-- ==========================================================================
+   ABA 2: GRADUAÇÃO EM FÍSICA
+   ========================================================================== -->
 <div id="tab-fisica" class="tab-content">
-  <div class="progress-panel">
-    <div class="progress-info">
-      <span>Progresso Geral de Física</span>
-      <span id="physics-progress-text">0 / 0 (0%)</span>
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h2>Graduação em Física — Checklist Semanal</h2>
+      <span id="physics-progress-text" style="font-weight: 700; color: var(--primary);">0% concluído</span>
     </div>
     <div class="progress-bar-bg">
       <div class="progress-bar-fill" id="physics-progress-bar"></div>
     </div>
-    <div style="text-align: right;">
-      <button class="btn-reset" id="reset-physics-btn">Limpar Marcações de Física</button>
+
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Dia</th>
+            <th>Aquecimento Pré-Aula</th>
+            <th>Bloco Base / Stewart</th>
+            <th>Estudo Passivo</th>
+            <th>Aulas Presenciais</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Segunda</strong></td>
+            <td>
+              <span class="tag tag-win">Winterle (GA)</span>
+              <label class="task-check"><input type="checkbox" id="phy_seg_1" onchange="saveChecklist()"><span>Vetores: tratamento geométrico</span></label>
+              <label class="task-check"><input type="checkbox" id="phy_seg_2" onchange="saveChecklist()"><span>Vetores: tratamento algébrico</span></label>
+            </td>
+            <td>
+              <span class="tag tag-stw">Stewart (Geometria)</span>
+              <label class="task-check"><input type="checkbox" id="phy_seg_3" onchange="saveChecklist()"><span>Apêndices B e C</span></label>
+            </td>
+            <td>
+              <span class="tag tag-fis">Mannarino</span>
+              <label class="task-check"><input type="checkbox" id="phy_seg_4" onchange="saveChecklist()"><span>Física do Zero + Exercícios</span></label>
+            </td>
+            <td>
+              <span class="tag tag-aul">18:00 – 22:30</span><br>Geometria Analítica
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Terça</strong></td>
+            <td>
+              <span class="tag tag-win">Winterle (GA)</span>
+              <label class="task-check"><input type="checkbox" id="phy_ter_1" onchange="saveChecklist()"><span>Produto Escalar e Projeção</span></label>
+            </td>
+            <td>
+              <span class="tag tag-stw">Stewart (Álgebra)</span>
+              <label class="task-check"><input type="checkbox" id="phy_ter_2" onchange="saveChecklist()"><span>Fatoração e Apêndice A</span></label>
+            </td>
+            <td>
+              <span class="tag tag-fis">Mannarino</span>
+              <label class="task-check"><input type="checkbox" id="phy_ter_3" onchange="saveChecklist()"><span>Aulas + Questões</span></label>
+            </td>
+            <td>
+              <span class="tag tag-aul">18:00 – 22:30</span><br>Psicologia da Educação
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Quarta</strong></td>
+            <td>
+              <span class="tag tag-win">Química</span>
+              <label class="task-check"><input type="checkbox" id="phy_qua_1" onchange="saveChecklist()"><span>Estrutura Atômica e Tabela</span></label>
+            </td>
+            <td>
+              <span class="tag tag-stw">Stewart (Funções)</span>
+              <label class="task-check"><input type="checkbox" id="phy_qua_2" onchange="saveChecklist()"><span>Domínio e Inversas</span></label>
+            </td>
+            <td>
+              <span class="tag tag-fis">Mannarino</span>
+              <label class="task-check"><input type="checkbox" id="phy_qua_3" onchange="saveChecklist()"><span>Vídeos livres</span></label>
+            </td>
+            <td>
+              <span class="tag tag-aul">19:00 – 22:30</span><br>Diversidade & Química Geral
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-  </div>
-
-  <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th>Dia</th>
-          <th>Aquecimento Pré-Aula</th>
-          <th>Bloco Base / Stewart</th>
-          <th>Estudo Passivo: Física</th>
-          <th>Aulas Presenciais</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- SEGUNDA -->
-        <tr>
-          <td class="day-col">Segunda</td>
-          <td>
-            <span class="tag tag-esquente">Winterle</span>
-            <label class="task-item"><input type="checkbox" class="physics-cb" id="seg-esq-1"><span>Vetores: tratamento geométrico</span></label>
-            <label class="task-item"><input type="checkbox" class="physics-cb" id="seg-esq-2"><span>Vetores: tratamento algébrico</span></label>
-          </td>
-          <td>
-            <span class="tag tag-stewart">Stewart</span>
-            <label class="task-item"><input type="checkbox" class="physics-cb" id="seg-stew-1"><span>Apêndices B e C</span></label>
-          </td>
-          <td>
-            <span class="tag tag-fisica">Mannarino</span>
-            <label class="task-item"><input type="checkbox" class="physics-cb" id="seg-fis-1"><span>Física do Zero + Qconcursos</span></label>
-          </td>
-          <td>
-            <span class="tag tag-aula">18:00 – 22:30</span>
-            <label class="task-item"><input type="checkbox" class="physics-cb" id="seg-aula-1"><span>Geometria Analítica</span></label>
-          </td>
-        </tr>
-
-        <!-- TERÇA -->
-        <tr>
-          <td class="day-col">Terça</td>
-          <td>
-            <span class="tag tag-esquente">Winterle</span>
-            <label class="task-item"><input type="checkbox" class="physics-cb" id="ter-esq-1"><span>Produto escalar e projeção</span></label>
-          </td>
-          <td>
-            <span class="tag tag-stewart">Stewart</span>
-            <label class="task-item"><input type="checkbox" class="physics-cb" id="ter-stew-1"><span>Fatoração & Apêndice A</span></label>
-          </td>
-          <td>
-            <span class="tag tag-fisica">Mannarino</span>
-            <label class="task-item"><input type="checkbox" class="physics-cb" id="ter-fis-1"><span>Aulas + Exercícios</span></label>
-          </td>
-          <td>
-            <span class="tag tag-aula">18:00 – 22:30</span>
-            <label class="task-item"><input type="checkbox" class="physics-cb" id="ter-aula-1"><span>Psicologia da Educação</span></label>
-          </td>
-        </tr>
-
-        <!-- QUARTA -->
-        <tr>
-          <td class="day-col">Quarta</td>
-          <td>
-            <span class="tag tag-esquente">Química</span>
-            <label class="task-item"><input type="checkbox" class="physics-cb" id="qua-esq-1"><span>Estrutura Atômica e Tabela</span></label>
-          </td>
-          <td>
-            <span class="tag tag-stewart">Stewart</span>
-            <label class="task-item"><input type="checkbox" class="physics-cb" id="qua-stew-1"><span>Funções & Inversas</span></label>
-          </td>
-          <td>
-            <span class="tag tag-fisica">Mannarino</span>
-            <label class="task-item"><input type="checkbox" class="physics-cb" id="qua-fis-1"><span>Vídeos / Questões</span></label>
-          </td>
-          <td>
-            <span class="tag tag-aula">Presencial</span>
-            <label class="task-item"><input type="checkbox" class="physics-cb" id="qua-aula-1"><span>Diversidade & Química Geral</span></label>
-          </td>
-        </tr>
-
-        <!-- QUINTA -->
-        <tr>
-          <td class="day-col">Quinta</td>
-          <td>
-            <span class="tag tag-esquente">Fundamentos</span>
-            <label class="task-item"><input type="checkbox" class="physics-cb" id="qui-esq-1"><span>Conjuntos e Funções</span></label>
-          </td>
-          <td>
-            <span class="tag tag-stewart">Stewart</span>
-            <label class="task-item"><input type="checkbox" class="physics-cb" id="qui-stew-1"><span>Trigonometria (Apêndice D)</span></label>
-          </td>
-          <td>
-            <span class="tag tag-fisica">Mannarino</span>
-            <label class="task-item"><input type="checkbox" class="physics-cb" id="qui-fis-1"><span>Revisão Rápida</span></label>
-          </td>
-          <td>
-            <span class="tag tag-aula">Presencial</span>
-            <label class="task-item"><input type="checkbox" class="physics-cb" id="qui-aula-1"><span>Intro ao Lab & Proj. Integradores</span></label>
-          </td>
-        </tr>
-
-        <!-- SEXTA -->
-        <tr>
-          <td class="day-col">Sexta</td>
-          <td>
-            <span class="tag tag-esquente">Fundamentos</span>
-            <label class="task-item"><input type="checkbox" class="physics-cb" id="sex-esq-1"><span>Matrizes e Determinantes</span></label>
-          </td>
-          <td>
-            <span class="tag tag-stewart">Stewart</span>
-            <label class="task-item"><input type="checkbox" class="physics-cb" id="sex-stew-1"><span>Limites e Continuidade</span></label>
-          </td>
-          <td>
-            <span class="tag tag-fisica">Mannarino</span>
-            <label class="task-item"><input type="checkbox" class="physics-cb" id="sex-fis-1"><span>Resolução de Exercícios</span></label>
-          </td>
-          <td>
-            <span class="tag tag-aula">Presencial</span>
-            <label class="task-item"><input type="checkbox" class="physics-cb" id="sex-aula-1"><span>Fundamentos da Matemática</span></label>
-          </td>
-        </tr>
-      </tbody>
-    </table>
   </div>
 </div>
 
-<!-- ====================================================================
-     5. ABA 3: CONCURSO PMAL & REDAÇÃO
-     Estratégia minimalista focado em exatas, português e informática.
-     ==================================================================== -->
+<!-- ==========================================================================
+   ABA 3: PMAL & CONCURSOS
+   ========================================================================== -->
 <div id="tab-pmal" class="tab-content">
   <div class="card">
-    <h2 style="margin-bottom: 10px; color: #1e3a8a;">Reta Final PMAL (Foco Curinga)</h2>
-    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">
-      Modo minimalista: foque apenas nas matérias curingas (Português, Exatas e Informática) sem sobrecarregar com a faculdade.
+    <h2>PMAL — Reta Final Minimalista</h2>
+    <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px; margin-bottom: 16px;">
+      Foco exclusivo nas matérias curinga (Português, Exatas e Informática) para conciliar com a faculdade.
     </p>
 
-    <div class="day-card">
-      <div class="day-title">Dia 1 - Bloco Inicial</div>
-      <div class="subject-title">Língua Portuguesa</div>
-      <label class="task-item"><input type="checkbox" class="pmal-cb" id="pmal-d1-1"><span>Compreensão e Interpretação de Textos</span></label>
-      <label class="task-item"><input type="checkbox" class="pmal-cb" id="pmal-d1-2"><span>Domínio da Ortografia Oficial</span></label>
-      <div class="subject-title">Direito & Legislação</div>
-      <label class="task-item"><input type="checkbox" class="pmal-cb" id="pmal-d1-3"><span>CTB e Direitos Humanos (Leitura Rápida)</span></label>
-    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+      <div style="background: #f8fafc; border: 1px solid var(--border-color); padding: 14px; border-radius: 8px;">
+        <h4 style="margin-bottom: 8px; color: var(--primary);">Língua Portuguesa (Curinga)</h4>
+        <label class="task-check"><input type="checkbox" id="pmal_por_1" onchange="saveChecklist()"><span>Interpretação e Tipos de Textos</span></label>
+        <label class="task-check"><input type="checkbox" id="pmal_por_2" onchange="saveChecklist()"><span>Ortografia Oficial e Acentuação</span></label>
+        <label class="task-check"><input type="checkbox" id="pmal_por_3" onchange="saveChecklist()"><span>Sintaxe, Crase e Pontuação</span></label>
+      </div>
 
-    <div class="day-card">
-      <div class="day-title">Dia 2 - Exatas & Informática</div>
-      <div class="subject-title">Matemática / RLM</div>
-      <label class="task-item"><input type="checkbox" class="pmal-cb" id="pmal-d2-1"><span>Razão, Proporção e Regra de Três</span></label>
-      <label class="task-item"><input type="checkbox" class="pmal-cb" id="pmal-d2-2"><span>Porcentagem e Juros Simples</span></label>
-      <div class="subject-title">Informática</div>
-      <label class="task-item"><input type="checkbox" class="pmal-cb" id="pmal-d2-3"><span>Windows, Redes e Conceitos de Nuvem</span></label>
+      <div style="background: #f8fafc; border: 1px solid var(--border-color); padding: 14px; border-radius: 8px;">
+        <h4 style="margin-bottom: 8px; color: var(--primary);">Matemática & RLM</h4>
+        <label class="task-check"><input type="checkbox" id="pmal_mat_1" onchange="saveChecklist()"><span>Razão, Proporção e Regra de Três</span></label>
+        <label class="task-check"><input type="checkbox" id="pmal_mat_2" onchange="saveChecklist()"><span>Porcentagem e Juros Simples</span></label>
+      </div>
+
+      <div style="background: #f8fafc; border: 1px solid var(--border-color); padding: 14px; border-radius: 8px;">
+        <h4 style="margin-bottom: 8px; color: var(--primary);">Noções de Informática</h4>
+        <label class="task-check"><input type="checkbox" id="pmal_inf_1" onchange="saveChecklist()"><span>Windows e Gerenciamento de Arquivos</span></label>
+        <label class="task-check"><input type="checkbox" id="pmal_inf_2" onchange="saveChecklist()"><span>Segurança da Informação e Nuvem</span></label>
+      </div>
     </div>
   </div>
 </div>
-
