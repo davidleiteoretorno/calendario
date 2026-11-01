@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weekly Planner & Productivity Dashboard</title>
+  <style>
+    /* ==========================================================================
+       ESTILOS VISUAIS (INSPIRADOS EXATAMENTE NA IMAGEM DE REFERÊNCIA)
+       ========================================================================== */
+    :root {
+      --bg-main: #eef2f7;          /* Fundo azul-acinzentado muito suave */
+      --card-bg: #ffffff;          /* Fundo dos cards brancos */
+      --border-color: #e2e8f0;     /* Borda suave */
+      --text-main: #1e293b;        /* Texto principal escuro */
+      --text-muted: #64748b;       /* Texto secundário */
+      --primary: #4f46e5;
+
+      /* Cores dos Botões Circulares de Status */
+      --status-v: #22c55e;
+      --status-v-bg: #dcfce7;
+      --status-r: #3b82f6;
+      --status-r-bg: #dbeafe;
+      --status-x: #ef4444;
+      --status-x-bg: #fee2e2;
+
+      /* Tags Coloridas */
+      --tag-purple-bg: #ede9fe;
+      --tag-purple-txt: #6d28d9;
+      --tag-orange-bg: #ffedd5;
+      --tag-orange-txt: #c2410c;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .app-container {
+      max-width: 1450px;
+      margin: 0 auto;
+    }
+
+    /* ==========================================================================
+       BARRA SUPERIOR (HEADER IDÊNTICO À IMAGEM)
+       ========================================================================== */
+    .top-navbar {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+      margin-bottom: 24px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .nav-tab-item {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .nav-tab-item:hover {
+      background: #f1f5f9;
+      color: var(--text-main);
+    }
+
+    .nav-tab-item.active {
+      color: var(--primary);
+    }
+
+    .nav-tab-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: -12px;
+      left: 10%;
+      width: 80%;
+      height: 3px;
+      background-color: var(--primary);
+      border-radius: 3px;
+    }
+
+    .header-badges {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .badge-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .badge-fire {
+      background: #f3e8ff;
+      color: #7e22ce;
+    }
+
+    .badge-check {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    /* ==========================================================================
+       VISÃO SEMANAL (WEEKLY PLANNER)
+       ========================================================================== */
+    .page-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-bottom: 20px;
+      color: #0f172a;
+    }
+
+    .weekly-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 1200px) {
+      .weekly-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      }
+    }
+
+    /* Super Card do Dia (Estilo Imagem) */
+    .day-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 18px 14px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      border: 1px solid #f1f5f9;
+    }
+
+    .day-header {
+      text-align: center;
+      padding-bottom: 6px;
+    }
+
+    .day-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    /* Seções de Assuntos */
+    .subject-block {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .subject-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 2px;
+    }
+
+    /* Lista de Tarefas / Tópicos */
+    .task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .task-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .task-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .dot-indicator {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #3b82f6;
+      flex-shrink: 0;
+    }
+
+    .dot-orange {
+      background: #f97316;
+    }
+
+    .task-text-input {
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 0.8rem;
+      color: var(--text-main);
+      width: 100%;
+      font-weight: 500;
+    }
+
+    .task-text-input:focus {
+      border-bottom: 1px dashed var(--primary);
+    }
+
+    .task-row.completed .task-text-input {
+      text-decoration: line-through;
+      color: var(--text-muted);
+      opacity: 0.6;
+    }
+
+    /* Botões Circulares de Status (V, R, X) na Base de Cada Bloco */
+    .status-circles {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .circle-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 800;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .circle-v { background: #e2e8f0; color: #475569; }
+    .circle-r { background: #e2e8f0; color: #475569; }
+    .circle-x { background: #e2e8f0; color: #475569; }
+
+    .circle-v.active { background: var(--status-v); color: #ffffff; transform: scale(1.1); }
+    .circle-r.active { background: var(--status-r); color: #ffffff; transform: scale(1.1); }
+    .circle-x.active { background: var(--status-x); color: #ffffff; transform: scale(1.1); }
+
+    /* Tag de Destaque Interna */
+    .inline-tag {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 12px;
+      display: inline-block;
+      width: fit-content;
+    }
+    .tag-purple { background: var(--tag-purple-bg); color: var(--tag-purple-txt); }
+    .tag-orange { background: var(--tag-orange-bg); color: var(--tag-orange-txt); }
+
+    .btn-add {
+      background: none;
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 4px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-align: center;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+    .btn-add:hover { border-color: var(--primary); color: var(--primary); }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- BARRA SUPERIOR COM ABAS (SEM AÇÃO NO MOMENTO) -->
+    <header class="top-navbar">
+      <nav class="nav-tabs">
+        <button class="nav-tab-item active" title="Geral / Visão Semanal"><span>🏠</span></button>
+        <button class="nav-tab-item" title="Calendário Mensal"><span>📅</span></button>
+        <button class="nav-tab-item" title="Produtividade Macro"><span>📊</span></button>
+        <button class="nav-tab-item" title="Eventos e Prazos"><span>📆</span></button>
+        <button class="nav-tab-item" title="Perfil"><span>👤</span></button>
+      </nav>
+
+      <div class="header-badges">
+        <div class="badge-pill badge-fire">
+          <span>🔥</span> <span id="streak-count">25 Days</span>
+        </div>
+        <div class="badge-pill badge-check">
+          <span>✓</span> <span>100% Complete</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- TÍTULO DA PÁGINA -->
+    <h1 class="page-title">Weekly Planner</h1>
+
+    <!-- GRID DOS 7 DIAS (ESTILO IMAGEM DE REFERÊNCIA) -->
+    <main class="weekly-grid" id="weekly-grid">
+      <!-- Gerado dinamicamente via JavaScript -->
+    </main>
+
+  </div>
+
+  <script>
+    // Estrutura de dados padrão idêntica aos 7 dias da imagem
+    const weekDaysData = [
+      {
+        dayName: "Monday",
+        physics: [
+          { text: "Vetores: tratamento geométrico", done: true },
+          { text: "Apêndices B e C (Stewart)", done: false, tag: "University Physics" }
+        ],
+        statusPhysics: "v",
+        pmal: [
+          { text: "Português: Crase & Pontuação", done: false }
+        ],
+        statusPmal: "v"
+      },
+      {
+        dayName: "Tuesday",
+        physics: [
+          { text: "Produto escalar e projeção", done: false },
+          { text: "Fatoração & Apêndice A", done: false }
+        ],
+        statusPhysics: "r",
+        pmal: [
+          { text: "RLM: Razão e Proporção", done: false, tag: "Civil Service" }
+        ],
+        statusPmal: "v"
+      },
+      {
+        dayName: "Wednesday",
+        physics: [
+          { text: "Estrutura Atômica e Tabela", done: true },
+          { text: "Funções & Inversas", done: false }
+        ],
+        statusPhysics: "v",
+        pmal: [
+          { text: "Informática: Nuvem e Redes", done: false, tag: "Civil Service" }
+        ],
+        statusPmal: "x"
+      },
+      {
+        dayName: "Thursday",
+        physics: [
+          { text: "Conjuntos e Funções", done: true },
+          { text: "Trigonometria (Apêndice D)", done: false, tag: "University Physics" }
+        ],
+        statusPhysics: "v",
+        pmal: [
+          { text: "Direito: Direitos Humanos", done: false, tag: "Civil Service" }
+        ],
+        statusPmal: "r"
+      },
+      {
+        dayName: "Friday",
+        physics: [
+          { text: "Matrizes e Determinantes", done: true },
+          { text: "Limites e Continuidade", done: false }
+        ],
+        statusPhysics: "v",
+        pmal: [
+          { text: "Revisão Geral de Português", done: false, tag: "Civil Service" }
+        ],
+        statusPmal: "x"
+      },
+      {
+        dayName: "Saturday",
+        physics: [
+          { text: "Resolução de Exercícios Stewart", done: false },
+          { text: "Revisão Mannarino", done: false, tag: "Physics" }
+        ],
+        statusPhysics: "r",
+        pmal: [
+          { text: "Simulado 20 Questões", done: false }
+        ],
+        statusPmal: "r"
+      },
+      {
+        dayName: "Sunday",
+        physics: [
+          { text: "Leitura Complementar", done: true },
+          { text: "Organização da Semana", done: false }
+        ],
+        statusPhysics: "v",
+        pmal: [
+          { text: "Descanso / Planejamento", done: false }
+        ],
+        statusPmal: "r"
+      }
+    ];
+
+    function renderWeeklyGrid() {
+      const container = document.getElementById('weekly-grid');
+      container.innerHTML = '';
+
+      weekDaysData.forEach((day, dayIndex) => {
+        const card = document.createElement('div');
+        card.className = 'day-card';
+
+        card.innerHTML = `
+          <!-- CABEÇALHO DO DIA -->
+          <div class="day-header">
+            <div class="day-title">${day.dayName}</div>
+          </div>
+
+          <!-- BLOCO 1: FACULDADE DE FÍSICA -->
+          <div class="subject-block">
+            <div class="subject-title">University Physics</div>
+            <div class="task-list" id="physics-list-${dayIndex}">
+              ${day.physics.map((item, itemIdx) => `
+                <div class="task-row ${item.done ? 'completed' : ''}">
+                  <div class="task-left">
+                    <span class="dot-indicator"></span>
+                    <input type="text" class="task-text-input" value="${item.text}" onchange="updateText(${dayIndex}, 'physics', ${itemIdx}, this.value)">
+                  </div>
+                  <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleCheck(${dayIndex}, 'physics', ${itemIdx})">
+                </div>
+                ${item.tag ? `<span class="inline-tag tag-purple">${item.tag}</span>` : ''}
+              `).join('')}
+            </div>
+            <button class="btn-add" onclick="addItem(${dayIndex}, 'physics')">+ Add Task</button>
+
+            <!-- BOTOES CIRCULARES DE STATUS DA FÍSICA -->
+            <div class="status-circles">
+              <button class="circle-btn circle-v ${day.statusPhysics === 'v' ? 'active' : ''}" onclick="setStatus(${dayIndex}, 'statusPhysics', 'v')">✓</button>
+              <button class="circle-btn circle-r ${day.statusPhysics === 'r' ? 'active' : ''}" onclick="setStatus(${dayIndex}, 'statusPhysics', 'r')">↻</button>
+              <button class="circle-btn circle-x ${day.statusPhysics === 'x' ? 'active' : ''}" onclick="setStatus(${dayIndex}, 'statusPhysics', 'x')">✕</button>
+            </div>
+          </div>
+
+          <!-- BLOCO 2: CONCURSO PMAL / OUTROS -->
+          <div class="subject-block" style="margin-top: 10px;">
+            <div class="subject-title">Civil Service Exam</div>
+            <div class="task-list" id="pmal-list-${dayIndex}">
+              ${day.pmal.map((item, itemIdx) => `
+                <div class="task-row ${item.done ? 'completed' : ''}">
+                  <div class="task-left">
+                    <span class="dot-indicator dot-orange"></span>
+                    <input type="text" class="task-text-input" value="${item.text}" onchange="updateText(${dayIndex}, 'pmal', ${itemIdx}, this.value)">
+                  </div>
+                  <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleCheck(${dayIndex}, 'pmal', ${itemIdx})">
+                </div>
+                ${item.tag ? `<span class="inline-tag tag-orange">${item.tag}</span>` : ''}
+              `).join('')}
+            </div>
+            <button class="btn-add" onclick="addItem(${dayIndex}, 'pmal')">+ Add Task</button>
+
+            <!-- BOTOES CIRCULARES DE STATUS DO CONCURSO -->
+            <div class="status-circles">
+              <button class="circle-btn circle-v ${day.statusPmal === 'v' ? 'active' : ''}" onclick="setStatus(${dayIndex}, 'statusPmal', 'v')">✓</button>
+              <button class="circle-btn circle-r ${day.statusPmal === 'r' ? 'active' : ''}" onclick="setStatus(${dayIndex}, 'statusPmal', 'r')">↻</button>
+              <button class="circle-btn circle-x ${day.statusPmal === 'x' ? 'active' : ''}" onclick="setStatus(${dayIndex}, 'statusPmal', 'x')">✕</button>
+            </div>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function setStatus(dayIdx, type, val) {
+      weekDaysData[dayIdx][type] = weekDaysData[dayIdx][type] === val ? null : val;
+      renderWeeklyGrid();
+    }
+
+    function toggleCheck(dayIdx, section, itemIdx) {
+      weekDaysData[dayIdx][section][itemIdx].done = !weekDaysData[dayIdx][section][itemIdx].done;
+      renderWeeklyGrid();
+    }
+
+    function updateText(dayIdx, section, itemIdx, val) {
+      weekDaysData[dayIdx][section][itemIdx].text = val;
+    }
+
+    function addItem(dayIdx, section) {
+      weekDaysData[dayIdx][section].push({ text: "Nova matéria / tarefa", done: false });
+      renderWeeklyGrid();
+    }
+
+    // Inicialização
+    renderWeeklyGrid();
+  </script>
+</body>
+</html>
