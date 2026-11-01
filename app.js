@@ -431,8 +431,11 @@
       recordedStatuses.forEach(([dateKey, status]) => {
         if (status === "v") {
           productiveDays += 1;
-          const isConsecutive = previousDate
-            && addDays(fromDateKey(previousDate), 1).getTime() === fromDateKey(dateKey).getTime();
+        }
+
+        const isConsecutive = previousDate
+          && addDays(fromDateKey(previousDate), 1).getTime() === fromDateKey(dateKey).getTime();
+        if (status === "v" || status === "x") {
           streak = isConsecutive ? streak + 1 : 1;
           bestStreak = Math.max(bestStreak, streak);
         } else {
@@ -443,7 +446,7 @@
 
       const todayStatus = productivityHistory[todayKey];
       let streakDate = fromDateKey(todayKey);
-      if (VALID_STATUSES.includes(todayStatus) && todayStatus !== "v") {
+      if (todayStatus === "r") {
         streakDate = null;
       } else if (!VALID_STATUSES.includes(todayStatus)) {
         streakDate = addDays(streakDate, -1);
@@ -452,7 +455,7 @@
       let currentStreak = 0;
       while (streakDate) {
         const status = productivityHistory[toDateKey(streakDate)];
-        if (status !== "v") {
+        if (status !== "v" && status !== "x") {
           break;
         }
         currentStreak += 1;
@@ -633,12 +636,12 @@
         <article class="macro-stat-card">
           <span class="macro-stat-label">Sequência atual</span>
           <strong class="macro-stat-value">${formatDayCount(stats.currentStreak)}</strong>
-          <span class="macro-stat-detail">Dias produtivos consecutivos</span>
+          <span class="macro-stat-detail">Dias sem status R</span>
         </article>
         <article class="macro-stat-card">
           <span class="macro-stat-label">Recorde histórico</span>
           <strong class="macro-stat-value">${formatDayCount(stats.bestStreak)}</strong>
-          <span class="macro-stat-detail">Maior sequência sem dias ruins ou inativos</span>
+          <span class="macro-stat-detail">Maior sequência sem dias ruins (R)</span>
         </article>
         <article class="macro-stat-card">
           <span class="macro-stat-label">Dias positivos ${rangeLabel}</span>
