@@ -144,6 +144,28 @@
     let legacyWeekData = JSON.parse(localStorage.getItem('weekly_planner_data')) || initialWeekData;
     let productivityHistory = JSON.parse(localStorage.getItem('weekly_planner_history')) || {};
     let calendarEvents = JSON.parse(localStorage.getItem('calendar_events')) || [];
+    const initialCalendarTasks = [
+      { id: "nov-2026-questoes-janesmar", kind: "task", title: "questões janesmar", date: "2026-11-04", time: "", category: "deadline", notes: "", done: false },
+      { id: "nov-2026-relatorio-janesmar", kind: "task", title: "relatório janesmar", date: "2026-11-04", time: "", category: "deadline", notes: "", done: false },
+      { id: "nov-2026-trabalho-diversidade", kind: "task", title: "trabalho de diversidade", date: "2026-11-18", time: "", category: "deadline", notes: "", done: false },
+      { id: "nov-2026-aprofundar-psicologia", kind: "task", title: "aprofundar psicologia", date: "2026-11-03", time: "", category: "deadline", notes: "", done: false },
+      { id: "nov-2026-projeto-integrador", kind: "task", title: "projeto integrador extensionista", date: "2026-11-12", time: "", category: "deadline", notes: "", done: false },
+      { id: "nov-2026-relatorio-pesquisa-extensao", kind: "task", title: "relatório pesquisa extensão", date: "2026-11-25", time: "", category: "deadline", notes: "", done: false },
+      { id: "nov-2026-atividade-pesquisa-extensao", kind: "task", title: "atividade p/ casa pesquisa e extensão", date: "2026-11-12", time: "", category: "deadline", notes: "", done: false },
+      { id: "nov-2026-aprofundar-astronomia", kind: "task", title: "aprofundar astronomia", date: "2026-11-05", time: "", category: "deadline", notes: "", done: false },
+      { id: "nov-2026-prova-fundamentos", kind: "task", title: "prova de fundamentos", date: "2026-11-06", time: "", category: "exam", notes: "", done: false }
+    ];
+    const initialCalendarTasksImported = "calendar_november_2026_tasks_imported";
+    if (localStorage.getItem(initialCalendarTasksImported) !== "true") {
+      const missingCalendarTasks = initialCalendarTasks.filter(task =>
+        !calendarEvents.some(event => event.title === task.title && event.date === task.date)
+      );
+      if (missingCalendarTasks.length) {
+        calendarEvents.push(...missingCalendarTasks);
+        localStorage.setItem('calendar_events', JSON.stringify(calendarEvents));
+      }
+      localStorage.setItem(initialCalendarTasksImported, "true");
+    }
     const previousVersionHistory = {
       "2026-09-28": "v",
       "2026-09-29": "r",
