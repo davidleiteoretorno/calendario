@@ -137,7 +137,6 @@
     let selectedMonth = new Date(today.getFullYear(), today.getMonth(), 1, 12);
     let selectedYear = today.getFullYear();
     let eventsCalendarYear = today.getFullYear();
-    let showPastEventsMonths = false;
     let macroViewMode = "month";
     let selectedDateKey = toDateKey(today);
     let periodStart = new Date(today.getFullYear(), today.getMonth(), 1, 12);
@@ -549,21 +548,7 @@
 
     function renderEventsCalendar() {
       document.getElementById('events-year-label').textContent = String(eventsCalendarYear);
-      const currentEventsYear = eventsCalendarYear === today.getFullYear();
-      const togglePastMonthsButton = document.getElementById('toggle-past-events-months');
-      togglePastMonthsButton.hidden = !currentEventsYear;
-      togglePastMonthsButton.setAttribute("aria-expanded", String(showPastEventsMonths));
-      togglePastMonthsButton.textContent = showPastEventsMonths
-        ? "Ocultar meses anteriores"
-        : "Ver meses anteriores";
-      const firstVisibleMonth = currentEventsYear && !showPastEventsMonths
-        ? today.getMonth()
-        : 0;
-      const visibleMonths = Array.from(
-        { length: 12 - firstVisibleMonth },
-        (_, index) => firstVisibleMonth + index
-      );
-      document.getElementById('events-calendar').innerHTML = visibleMonths.map(monthIndex => {
+      document.getElementById('events-calendar').innerHTML = Array.from({ length: 12 }, (_, monthIndex) => {
         const monthStart = new Date(eventsCalendarYear, monthIndex, 1, 12);
         const monthKey = `${eventsCalendarYear}-${String(monthIndex + 1).padStart(2, "0")}`;
         const daysInMonth = new Date(eventsCalendarYear, monthIndex + 1, 0).getDate();
@@ -612,12 +597,31 @@
         }).join("");
 
         return `
-          <section class="events-month-row" aria-label="${monthStart.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}">
+          <section class="events-month-row" data-events-month="${monthIndex}" aria-label="${monthStart.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}">
             <h3 class="events-month-name">${monthStart.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "")}</h3>
             <div class="events-month-days">${days}</div>
           </section>
         `;
       }).join("");
+    }
+
+    function positionEventsCalendarAtCurrentMonth() {
+      const monthIndex = eventsCalendarYear === today.getFullYear() ? today.getMonth() : 0;
+      const month = document.querySelector(`[data-events-month="${monthIndex}"]`);
+      if (!month) {
+        return;
+      }
+
+      const scrollContainer = document.getElementById('events-calendar-scroll');
+      const calendar = document.getElementById('events-calendar');
+      calendar.style.paddingBottom = "0px";
+      const monthOffset = month.offsetTop - calendar.offsetTop;
+      const contentAfterMonth = calendar.scrollHeight - monthOffset;
+      const extraScrollSpace = Math.max(0, scrollContainer.clientHeight - contentAfterMonth);
+      calendar.style.paddingBottom = `${extraScrollSpace}px`;
+      const monthTop = month.getBoundingClientRect().top;
+      const containerTop = scrollContainer.getBoundingClientRect().top;
+      scrollContainer.scrollTop += monthTop - containerTop;
     }
 
     function openEventDialog(dateKey = toDateKey(today), event = null) {
@@ -1132,21 +1136,19 @@
     document.getElementById('previous-events-year').addEventListener('click', () => {
       eventsCalendarYear -= 1;
       renderEventsCalendar();
+      positionEventsCalendarAtCurrentMonth();
     });
 
     document.getElementById('next-events-year').addEventListener('click', () => {
       eventsCalendarYear += 1;
       renderEventsCalendar();
+      positionEventsCalendarAtCurrentMonth();
     });
 
     document.getElementById('current-events-year').addEventListener('click', () => {
       eventsCalendarYear = today.getFullYear();
       renderEventsCalendar();
-    });
-
-    document.getElementById('toggle-past-events-months').addEventListener('click', () => {
-      showPastEventsMonths = !showPastEventsMonths;
-      renderEventsCalendar();
+      positionEventsCalendarAtCurrentMonth();
     });
 
     document.getElementById('add-calendar-event').addEventListener('click', () => {
@@ -1221,31 +1223,44 @@
     let activeEventsCalendarDrag = null;
     let suppressNextEventsCalendarClick = false;
 
-    function startEventsCalendarDrag(clientX, target) {
+    function startEventsCalendarDrag(clientX, clientY, target) {
       if (target.closest('dialog')) {
         return;
       }
 
       activeEventsCalendarDrag = {
         startX: clientX,
+        startY: clientY,
         startScrollLeft: eventsCalendarScroll.scrollLeft,
+        startScrollTop: eventsCalendarScroll.scrollTop,
+        axis: null,
         moved: false
       };
     }
 
-    function moveEventsCalendarDrag(clientX, event) {
+    function moveEventsCalendarDrag(clientX, clientY, event) {
       if (!activeEventsCalendarDrag) {
         return;
       }
 
-      const distance = clientX - activeEventsCalendarDrag.startX;
-      if (!activeEventsCalendarDrag.moved && Math.abs(distance) < 6) {
+      const distanceX = clientX - activeEventsCalendarDrag.startX;
+      const distanceY = clientY - activeEventsCalendarDrag.startY;
+      if (!activeEventsCalendarDrag.axis && Math.max(Math.abs(distanceX), Math.abs(distanceY)) < 6) {
         return;
       }
 
+      if (!activeEventsCalendarDrag.axis) {
+        activeEventsCalendarDrag.axis = Math.abs(distanceX) > Math.abs(distanceY)
+          ? "horizontal"
+          : "vertical";
+      }
       activeEventsCalendarDrag.moved = true;
       eventsCalendarScroll.classList.add('is-dragging');
-      eventsCalendarScroll.scrollLeft = activeEventsCalendarDrag.startScrollLeft - distance;
+      if (activeEventsCalendarDrag.axis === "horizontal") {
+        eventsCalendarScroll.scrollLeft = activeEventsCalendarDrag.startScrollLeft - distanceX;
+      } else {
+        eventsCalendarScroll.scrollTop = activeEventsCalendarDrag.startScrollTop - distanceY;
+      }
       event.preventDefault();
     }
 
@@ -1264,28 +1279,16 @@
       }
     }
 
-    eventsCalendarScroll.addEventListener('mousedown', event => {
+    eventsCalendarScroll.addEventListener('pointerdown', event => {
       if (event.button === 0) {
-        startEventsCalendarDrag(event.clientX, event.target);
+        startEventsCalendarDrag(event.clientX, event.clientY, event.target);
       }
     });
-    window.addEventListener('mousemove', event => {
-      moveEventsCalendarDrag(event.clientX, event);
+    window.addEventListener('pointermove', event => {
+      moveEventsCalendarDrag(event.clientX, event.clientY, event);
     });
-    window.addEventListener('mouseup', finishEventsCalendarDrag);
-
-    eventsCalendarScroll.addEventListener('touchstart', event => {
-      if (event.touches.length === 1) {
-        startEventsCalendarDrag(event.touches[0].clientX, event.target);
-      }
-    }, { passive: true });
-    eventsCalendarScroll.addEventListener('touchmove', event => {
-      if (event.touches.length === 1) {
-        moveEventsCalendarDrag(event.touches[0].clientX, event);
-      }
-    }, { passive: false });
-    window.addEventListener('touchend', finishEventsCalendarDrag);
-    window.addEventListener('touchcancel', () => {
+    window.addEventListener('pointerup', finishEventsCalendarDrag);
+    window.addEventListener('pointercancel', () => {
       activeEventsCalendarDrag = null;
       eventsCalendarScroll.classList.remove('is-dragging');
     });
@@ -1603,6 +1606,7 @@
           renderMacro();
         } else if (view === "events") {
           renderEventsCalendar();
+          positionEventsCalendarAtCurrentMonth();
         }
       });
     });

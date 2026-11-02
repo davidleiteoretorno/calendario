@@ -1024,13 +1024,15 @@
     }
 
     .events-calendar-scroll {
-      overflow-x: auto;
+      max-height: min(72vh, 760px);
+      overflow: auto;
       border: 1px solid var(--border-color);
       border-radius: 12px;
       background: var(--surface-soft);
       scrollbar-color: var(--control-border) var(--surface-soft);
       cursor: grab;
-      touch-action: pan-y;
+      overscroll-behavior: contain;
+      touch-action: none;
     }
 
     .events-calendar-scroll.is-dragging {
