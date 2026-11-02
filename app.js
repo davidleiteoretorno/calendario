@@ -137,6 +137,7 @@
     let selectedMonth = new Date(today.getFullYear(), today.getMonth(), 1, 12);
     let selectedYear = today.getFullYear();
     let eventsCalendarYear = today.getFullYear();
+    let showPastEventsMonths = false;
     let macroViewMode = "month";
     let selectedDateKey = toDateKey(today);
     let periodStart = new Date(today.getFullYear(), today.getMonth(), 1, 12);
@@ -548,7 +549,21 @@
 
     function renderEventsCalendar() {
       document.getElementById('events-year-label').textContent = String(eventsCalendarYear);
-      document.getElementById('events-calendar').innerHTML = Array.from({ length: 12 }, (_, monthIndex) => {
+      const currentEventsYear = eventsCalendarYear === today.getFullYear();
+      const togglePastMonthsButton = document.getElementById('toggle-past-events-months');
+      togglePastMonthsButton.hidden = !currentEventsYear;
+      togglePastMonthsButton.setAttribute("aria-expanded", String(showPastEventsMonths));
+      togglePastMonthsButton.textContent = showPastEventsMonths
+        ? "Ocultar meses anteriores"
+        : "Ver meses anteriores";
+      const firstVisibleMonth = currentEventsYear && !showPastEventsMonths
+        ? today.getMonth()
+        : 0;
+      const visibleMonths = Array.from(
+        { length: 12 - firstVisibleMonth },
+        (_, index) => firstVisibleMonth + index
+      );
+      document.getElementById('events-calendar').innerHTML = visibleMonths.map(monthIndex => {
         const monthStart = new Date(eventsCalendarYear, monthIndex, 1, 12);
         const monthKey = `${eventsCalendarYear}-${String(monthIndex + 1).padStart(2, "0")}`;
         const daysInMonth = new Date(eventsCalendarYear, monthIndex + 1, 0).getDate();
@@ -1126,6 +1141,11 @@
 
     document.getElementById('current-events-year').addEventListener('click', () => {
       eventsCalendarYear = today.getFullYear();
+      renderEventsCalendar();
+    });
+
+    document.getElementById('toggle-past-events-months').addEventListener('click', () => {
+      showPastEventsMonths = !showPastEventsMonths;
       renderEventsCalendar();
     });
 
